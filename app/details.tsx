@@ -1,20 +1,29 @@
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 import { Container } from '@/components/Container';
 import { ScreenContent } from '@/components/ScreenContent';
+import { useStore } from '@/store/store';
+import { Button } from '@/components/Button';
 
 export default function Details() {
   const { name } = useLocalSearchParams();
+  const { bears, increasePopulation, decreasePopulation, removeAllBears } = useStore();
 
   return (
-    <View className={styles.container}>
-      <Stack.Screen options={{ title: 'Details' }} />
+ 
       <Container>
-        <ScreenContent path="screens/details.tsx" title={`Showing details for user ${name}`} />
+        <View className="flex-row items-center justify-center gap-x-10">
+          <Button title="-" onPress={decreasePopulation} />
+          <Text className="text-xl">{bears}</Text>
+          <Button title="+" onPress={increasePopulation} />
+        </View>
+          <Button title="Reset" onPress={removeAllBears} />
+        <View className="mt-1 ">
+          <Text className="text-green-600">{name}</Text>
+        </View>
       </Container>
-    </View>
   );
 }
 
