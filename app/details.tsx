@@ -1,9 +1,8 @@
 import { Text, View } from 'react-native';
 
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 
 import { Container } from '@/components/Container';
-import { ScreenContent } from '@/components/ScreenContent';
 import { useStore } from '@/store/store';
 import { Button } from '@/components/Button';
 
@@ -16,17 +15,13 @@ export default function Details() {
       <Container>
         <View className="flex-row items-center justify-center gap-x-10">
           <Button title="-" onPress={decreasePopulation} />
-          <Text className="text-xl">{bears}</Text>
+          <Text className="text-xl font-medium ios:font-bold">{bears}</Text>
           <Button title="+" onPress={increasePopulation} />
         </View>
           <Button title="Reset" onPress={removeAllBears} />
         <View className="mt-1 ">
-          <Text className="text-green-600">{name}</Text>
+          <Text className="text-green-600 font-semibold">{name}</Text>
         </View>
       </Container>
   );
 }
-
-const styles = {
-  container: 'flex flex-1 bg-white',
-};

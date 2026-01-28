@@ -13,9 +13,30 @@ module.exports = {
         secondaryText: '#6B7280',
         border: '#E5E7EB',
       },
-      fontFamily:{
-        sans:['']
-      }
+      fontFamily: {
+        sans: ['PlusJakartaSans-Regular'],
+        medium: ['PlusJakartaSans-Medium'],
+        semibold: ['PlusJakartaSans-SemiBold'],
+        bold: ['PlusJakartaSans-Bold'],
+      },
+      fontSize: {
+        base: '16px',
+        sm: '14px',
+        lg: '18px',
+        xl: '20px',
+        '2xl': '24px',
+        '3xl': '28px',
+        '4xl': '32px',
+      },
+      lineHeight: {
+        base: '20px',
+        sm: '18px',
+        lg: '22px',
+        xl: '24px',
+        '2xl': '28px',
+        '3xl': '32px',
+        '4xl': '36px',
+      },
     },
   },
   plugins: [],
