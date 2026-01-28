@@ -17,7 +17,7 @@ export default function Splash() {
 
   useEffect(() => {
     translateY.value = withTiming(0, {
-      duration: 800,
+      duration: 200,
       easing: Easing.out(Easing.exp),
     });
 
@@ -27,7 +27,7 @@ export default function Splash() {
 
     const t = setTimeout(() => {
       router.replace('/welcome');
-    }, 60000);
+    }, 20000);
 
     return () => clearTimeout(t);
   }, []);
