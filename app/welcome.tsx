@@ -1,7 +1,6 @@
 import { View, Text, ImageBackground, Dimensions, Pressable, FlatList, Image } from 'react-native';
 import { useEffect, useRef, useState } from 'react';
-// useNavigation hook import karo
-import { useNavigation } from '@react-navigation/native';
+// import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
 
 const images = [
@@ -17,7 +16,7 @@ export default function Welcome() {
   const ref = useRef<FlatList>(null);
 
   
-  const Navigation = useNavigation<any>();
+  // const Navigation = useNavigation<any>();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -60,7 +59,7 @@ export default function Welcome() {
                 ))}
               </View>
 
-              <Pressable className="mb-4 rounded-2xl bg-[#F6163C] py-4">
+              <Pressable onPress={() => router.push('/auth/Login')} className="mb-4 rounded-2xl bg-[#F6163C] py-4">
                 <Text className="text-center font-semibold text-lg text-white">Login</Text>
               </Pressable>
 

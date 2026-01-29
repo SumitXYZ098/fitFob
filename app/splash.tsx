@@ -27,7 +27,7 @@ export default function Splash() {
 
     const t = setTimeout(() => {
       router.replace('/welcome');
-    }, 20000);
+    }, 1000);
 
     return () => clearTimeout(t);
   }, []);
