@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity,  } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Container } from '@/components/Container';
@@ -7,47 +7,51 @@ import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scro
 import OnBoarding1 from '../../components/screen/OnBoarding1';
 import OnBoarding2 from '@/components/screen/OnBoarding2';
 
+import { useRouter } from 'expo-router';
+
 export default function OnBoardingStep() {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const totalSteps = 5;
 
   const handleNext = () => {
     if (step < totalSteps) setStep(step + 1);
-    else console.log('Form Submitted!');
+    else {
+      // Form Submitted! Navigate to main app
+      router.replace('/(tabs)');
+    }
   };
 
   return (
     <Container>
       <KeyboardAwareScrollView
-        style={{ flex: 1, backgroundColor: 'white' }}
+        style={{ flex: 1, backgroundColor: 'white', height:'100%', }}
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled">
         {/* HEADER & PROGRESS BAR */}
-        <View className="mt-4">
-          <View className="mt-6 flex-row justify-between">
-            {[1, 2, 3, 4, 5].map((item) => {
-              let bgColor = ' ';
-              if (item === step) bgColor = 'bg-[#F6163C]';
-              else if (item < step) bgColor = 'bg-[#FFC1C1]';
+        <View className="ios:mt-1 mt-4 flex-row justify-between">
+          {[1, 2, 3, 4, 5].map((item) => {
+            let bgColor = ' ';
+            if (item === step) bgColor = 'bg-primary border-2 border-[#FFC1C1] h-4';
+            else if (item < step) bgColor = 'bg-[#FFC1C1] h-3';
+            else bgColor = 'border h-3 border-border';
 
-              return (
-                <TouchableOpacity
-                  key={item}
-                  onPress={() => item < step && setStep(item)}
-                  disabled={item >= step}
-                  className="mx-1 h-3 flex-1 justify-center"
-                  activeOpacity={0.7}>
-                  <View
-                    className={`h-3 w-full rounded-full  border-[] ${bgColor}`}
-                  />
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+            return (
+              <TouchableOpacity
+                key={item}
+                onPress={() => item < step && setStep(item)}
+                disabled={item >= step}
+                className="mx-1 h-auto flex-1 justify-center"
+                activeOpacity={0.7}>
+                <View className={`w-full rounded-full ${bgColor}`} />
+              </TouchableOpacity>
+            );
+          })}
         </View>
+
         {/* DYNAMIC CONTENT */}
-        <View className="mt-10">
+        <View className="mt-6">
           {step === 1 && <OnBoarding1 />}
           {step === 2 && <OnBoarding2 />}
           {step === 3 && <LocationStep />}
@@ -64,36 +68,6 @@ export default function OnBoardingStep() {
     </Container>
   );
 }
-
-// --- Step Components  ---
-
-// const NameStep = () => (
-//   <View>
-//     <Text className="font-bold text-3xl text-slate-900">What&lsquo;s your name?</Text>
-//     <Text className="mt-2 text-base text-slate-400">Let&lsquo;s get started with the basics.</Text>
-//     <TextInput
-//       placeholder="Full Name"
-//       className="mt-8 h-14 border-b-2 border-slate-100 font-semibold text-xl text-slate-900"
-//       autoFocus
-//     />
-
-//   </View>
-// );
-// const NameStep = () => {
-//   return <OnBoarding1 />;
-// };
-
-// const AgeWeightStep = () => (
-//   <View>
-//     <Text className="font-bold text-3xl text-slate-900">What is your Age?</Text>
-//     <Text className="mt-2 text-base text-slate-400">This helps us customize your plan.</Text>
-//     <TextInput
-//       placeholder="e.g. 25"
-//       keyboardType="number-pad"
-//       className="mt-8 h-14 border-b-2 border-slate-100 font-semibold text-xl text-slate-900"
-//     />
-//   </View>
-// );
 
 const LocationStep = () => (
   <View>
