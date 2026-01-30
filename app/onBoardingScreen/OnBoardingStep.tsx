@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity,  } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Container } from '@/components/Container';
 import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
-import OnBoarding1 from '../onBoardingScreen/OnBoarding1';
+import OnBoarding1 from '../../components/screen/OnBoarding1';
+import OnBoarding2 from '@/components/screen/OnBoarding2';
 
 export default function OnBoardingStep() {
   const [step, setStep] = useState(1);
@@ -26,7 +27,7 @@ export default function OnBoardingStep() {
         <View className="mt-4">
           <View className="mt-6 flex-row justify-between">
             {[1, 2, 3, 4, 5].map((item) => {
-              let bgColor = 'bg-slate-100';
+              let bgColor = ' ';
               if (item === step) bgColor = 'bg-[#F6163C]';
               else if (item < step) bgColor = 'bg-[#FFC1C1]';
 
@@ -38,7 +39,7 @@ export default function OnBoardingStep() {
                   className="mx-1 h-3 flex-1 justify-center"
                   activeOpacity={0.7}>
                   <View
-                    className={`h-3 w-full rounded-full border-2 border-[#FFC1C1] ${bgColor}`}
+                    className={`h-3 w-full rounded-full  border-[] ${bgColor}`}
                   />
                 </TouchableOpacity>
               );
@@ -47,8 +48,8 @@ export default function OnBoardingStep() {
         </View>
         {/* DYNAMIC CONTENT */}
         <View className="mt-10">
-          {step === 1 && <NameStep />}
-          {step === 2 && <AgeWeightStep />}
+          {step === 1 && <OnBoarding1 />}
+          {step === 2 && <OnBoarding2 />}
           {step === 3 && <LocationStep />}
           {step === 4 && <SelfieStep />}
           {step === 5 && <IDUploadStep />}
@@ -78,21 +79,21 @@ export default function OnBoardingStep() {
 
 //   </View>
 // );
-const NameStep = () => {
-  return <OnBoarding1 />;
-};
+// const NameStep = () => {
+//   return <OnBoarding1 />;
+// };
 
-const AgeWeightStep = () => (
-  <View>
-    <Text className="font-bold text-3xl text-slate-900">What is your Age?</Text>
-    <Text className="mt-2 text-base text-slate-400">This helps us customize your plan.</Text>
-    <TextInput
-      placeholder="e.g. 25"
-      keyboardType="number-pad"
-      className="mt-8 h-14 border-b-2 border-slate-100 font-semibold text-xl text-slate-900"
-    />
-  </View>
-);
+// const AgeWeightStep = () => (
+//   <View>
+//     <Text className="font-bold text-3xl text-slate-900">What is your Age?</Text>
+//     <Text className="mt-2 text-base text-slate-400">This helps us customize your plan.</Text>
+//     <TextInput
+//       placeholder="e.g. 25"
+//       keyboardType="number-pad"
+//       className="mt-8 h-14 border-b-2 border-slate-100 font-semibold text-xl text-slate-900"
+//     />
+//   </View>
+// );
 
 const LocationStep = () => (
   <View>
