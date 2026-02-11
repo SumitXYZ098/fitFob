@@ -11,7 +11,7 @@ import * as Google from 'expo-auth-session/providers/google';
 import * as Facebook from 'expo-auth-session/providers/facebook';
 import { ResponseType } from 'expo-auth-session';
 import { GoogleAuthProvider, FacebookAuthProvider, signInWithCredential } from 'firebase/auth';
-import { auth } from '../config/firebaseConfig';
+import { auth } from '../../config/firebaseConfig';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -22,7 +22,7 @@ export default function Login() {
 
   // Google Auth Request
   const [googleRequest, googleResponse, googlePromptAsync] = Google.useIdTokenAuthRequest({
-   clientId: '1026944446347-4gpshovr4kn56afecqsevj7o0assovht.apps.googleusercontent.com', 
+    clientId: '1026944446347-4gpshovr4kn56afecqsevj7o0assovht.apps.googleusercontent.com',
     iosClientId: '1026944446347-0cmronpk9hvtp7faf5dqcgsv84l2e9ns.apps.googleusercontent.com',
     androidClientId: '1026944446347-2bvmj2smroh6efc72m47kohegpoosloq.apps.googleusercontent.com',
   });
@@ -39,12 +39,12 @@ export default function Login() {
       const credential = GoogleAuthProvider.credential(id_token);
       signInWithCredential(auth, credential)
         .then(() => {
-           // Navigate or show success
-           router.replace('/(tabs)'); // Assuming tabs is main
+          // Navigate or show success
+          router.replace('/(tabs)'); // Assuming tabs is main
         })
         .catch((error) => {
-           console.error("Google Sign-In Error", error);
-           alert(error.message);
+          console.error('Google Sign-In Error', error);
+          alert(error.message);
         });
     }
   }, [googleResponse]);
@@ -55,11 +55,11 @@ export default function Login() {
       const credential = FacebookAuthProvider.credential(access_token);
       signInWithCredential(auth, credential)
         .then(() => {
-           router.replace('/(tabs)');
+          router.replace('/(tabs)');
         })
         .catch((error) => {
-           console.error("Facebook Sign-In Error", error);
-           alert(error.message);
+          console.error('Facebook Sign-In Error', error);
+          alert(error.message);
         });
     }
   }, [fbResponse]);
@@ -171,7 +171,7 @@ export default function Login() {
 
         {/* Social Buttons */}
         <View className="flex-row justify-between">
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => googlePromptAsync()}
             className="h-14 flex-[0.47] items-center justify-center rounded-2xl bg-[#F2F2F2]">
             <Image
@@ -180,7 +180,7 @@ export default function Login() {
               resizeMode="contain"
             />
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => fbPromptAsync()}
             className="h-14 flex-[0.47] items-center justify-center rounded-2xl bg-[#F2F2F2]">
             <Image

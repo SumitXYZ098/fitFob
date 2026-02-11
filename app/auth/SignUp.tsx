@@ -1,12 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Image,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Button } from '@/components/Button';
@@ -18,7 +12,7 @@ import * as Google from 'expo-auth-session/providers/google';
 import * as Facebook from 'expo-auth-session/providers/facebook';
 import { ResponseType } from 'expo-auth-session';
 import { GoogleAuthProvider, FacebookAuthProvider, signInWithCredential } from 'firebase/auth';
-import { auth } from '../config/firebaseConfig';
+import { auth } from '../../config/firebaseConfig';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -31,7 +25,7 @@ export default function SignUp() {
 
   // Google Auth Request
   const [googleRequest, googleResponse, googlePromptAsync] = Google.useIdTokenAuthRequest({
-    clientId: '1026944446347-4gpshovr4kn56afecqsevj7o0assovht.apps.googleusercontent.com', 
+    clientId: '1026944446347-4gpshovr4kn56afecqsevj7o0assovht.apps.googleusercontent.com',
     iosClientId: '1026944446347-0cmronpk9hvtp7faf5dqcgsv84l2e9ns.apps.googleusercontent.com',
     androidClientId: '1026944446347-2bvmj2smroh6efc72m47kohegpoosloq.apps.googleusercontent.com',
   });
@@ -48,12 +42,12 @@ export default function SignUp() {
       const credential = GoogleAuthProvider.credential(id_token);
       signInWithCredential(auth, credential)
         .then(() => {
-           // Navigate to Onboarding
-           router.replace('/onBoardingScreen/OnBoardingStep');
+          // Navigate to Onboarding
+          router.replace('/onBoardingScreen/OnBoardingStep');
         })
         .catch((error) => {
-           console.error("Google Sign-In Error", error);
-           alert(error.message);
+          console.error('Google Sign-In Error', error);
+          alert(error.message);
         });
     }
   }, [googleResponse]);
@@ -64,11 +58,11 @@ export default function SignUp() {
       const credential = FacebookAuthProvider.credential(access_token);
       signInWithCredential(auth, credential)
         .then(() => {
-           router.replace('/onBoardingScreen/OnBoardingStep');
+          router.replace('/onBoardingScreen/OnBoardingStep');
         })
         .catch((error) => {
-           console.error("Facebook Sign-In Error", error);
-           alert(error.message);
+          console.error('Facebook Sign-In Error', error);
+          alert(error.message);
         });
     }
   }, [fbResponse]);
@@ -186,12 +180,12 @@ export default function SignUp() {
         </View>
         <View className="mb-6">
           <View className="mt-2 flex-row justify-between">
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => googlePromptAsync()}
               className="h-14 flex-[0.47] flex-row items-center justify-center rounded-2xl bg-[#F2F2F2]">
               <Image source={require('../../assets/images/Google.png')} className="h-6 w-6" />
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => fbPromptAsync()}
               className="h-14 flex-[0.47] flex-row items-center justify-center rounded-2xl bg-[#F2F2F2]">
               <Image source={require('../../assets/images/Facebook.png')} className="h-6 w-6" />
