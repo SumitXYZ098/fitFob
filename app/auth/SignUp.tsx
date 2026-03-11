@@ -17,8 +17,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Toast from 'react-native-toast-message';
 import zxcvbn from 'zxcvbn';
-import { useSignupRequest } from '@/store/useAuthStore';
-
+import { useSignupRequest } from '@/hook/useAuth';
+ 
 WebBrowser.maybeCompleteAuthSession();
 
 // --- Backend Style Validation Logic ---
@@ -134,7 +134,7 @@ export default function SignUp() {
       identifier: data.identifier.toLowerCase().trim(),
       password: data.password,
       confirmPassword: data.confirmPassword,
-      role: 'ClubOwner',
+      role: 'Client',
     };
 
     signupMutation(payload, {
@@ -159,7 +159,7 @@ export default function SignUp() {
         });
 
         router.push({
-          pathname: '/auth/OtpScreen',
+          pathname: '/auth/SignUpOtpScreen',
           params: {
             email: payload.identifier,
             signupToken: token,

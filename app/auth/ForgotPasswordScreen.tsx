@@ -38,7 +38,7 @@ export default function ForgotPasswordScreen() {
       {
         onSuccess: () => {
           router.push({
-            pathname: '/auth/VerifyCode',  
+            pathname: '/auth/ForgotOtpScreen',  
             params: { email: data.email.toLowerCase().trim() }
           });
         },

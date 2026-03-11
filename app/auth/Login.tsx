@@ -7,14 +7,13 @@ import { Button } from '@/components/Button';
 import { Container } from '@/components/Container';
 import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
 import { LinearGradient } from 'expo-linear-gradient';
-
-// Validation Imports
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useLoginRequest } from '@/hooks/useAuth';
-import Toast from 'react-native-toast-message';
+ import Toast from 'react-native-toast-message';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useLoginRequest } from '@/hook/useAuth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // 1. Validation Schema
 const loginSchema = z.object({
@@ -48,14 +47,21 @@ export default function Login() {
   const { setUser } = useAuthStore();
   const onSubmit = (data: LoginFormData) => {
     loginMutation.mutate(data, {
-      onSuccess: () => {
+      onSuccess: async(response) => {
+
+        if(rememberMe) {
+          await AsyncStorage.setItem("rememberUser", JSON.stringify(response));
+        }
+
+        setUser(response)
+
         Toast.show({
           type: 'success',
           text1: 'Login Successful',
           text2: 'Welcome back! 👋',
         });
 
-       
+       router.replace("/")
       },
 
       onError: (error: any) => {
@@ -132,8 +138,8 @@ export default function Login() {
             className="h-[54px] w-[54px]"
             resizeMode="contain"
           />
-          <Text className="font-bold text-4xl text-darkText">Welcome Back</Text>
-          <Text className="mt-2 text-center font-medium text-sm text-secondaryText">
+          <Text className="font-bold text-4xl text-darkText">Get Started now</Text>
+          <Text className="mt-2 text-center font-normal leading-5 text-sm text-secondaryText">
             Please login to your account!
           </Text>
         </View>

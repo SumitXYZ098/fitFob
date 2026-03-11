@@ -5,8 +5,8 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Button } from '@/components/Button';
 import { Container } from '@/components/Container';
 import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
-import { useForgotResendOtp, useForgotVerifyOtp } from '@/hooks/useAuth';
 import Toast from 'react-native-toast-message';
+import { useForgotResendOtp, useForgotVerifyOtp } from '@/hook/useAuth';
 
 export default function ForgotOtpScreen() {
   const router = useRouter();
@@ -79,7 +79,6 @@ export default function ForgotOtpScreen() {
           console.log('✅ Forgot OTP Verified. Token:', data?.resetToken);
 
           if (data?.resetToken) {
-            // Handle reset token case
             router.push({
               pathname: '/auth/CreateNewPassword',
               params: {

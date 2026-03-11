@@ -7,8 +7,9 @@ import { Container } from '@/components/Container';
 import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
  
 import Toast from 'react-native-toast-message';
-import {  useResendOtp, useVerifyOtp } from '@/store/useAuthStore';
-
+import { useAuthStore } from '@/store/useAuthStore';
+import { useResendOtp, useVerifyOtp } from '@/hook/useAuth';
+ 
 export default function SignUpOtpScreen() {
   const router = useRouter();
   const { setUser } = useAuthStore();
