@@ -46,7 +46,8 @@ export default function CreateNewPassword() {
   });
 
   const onSubmit = (data: NewPasswordData) => {
-     const emailStr = Array.isArray(email) ? email[0] : email;
+    // Force params to be strings (handles string | string[] from useLocalSearchParams)
+    const emailStr = Array.isArray(email) ? email[0] : email;
     const tokenStr = Array.isArray(resetToken) ? resetToken[0] : resetToken;
 
     if (!tokenStr || !emailStr) {

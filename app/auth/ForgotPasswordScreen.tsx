@@ -94,7 +94,7 @@ export default function ForgotPasswordScreen() {
                   } bg-white px-4`}
                 >
                   <TextInput
-                    placeholder="xyztest@gmail.com"
+                    placeholder="Enter Gmail"
                     placeholderTextColor="#CBD5E1"
                     onBlur={onBlur}
                     onChangeText={onChange}
