@@ -36,6 +36,24 @@ const OnBoarding1 = () => {
           autoFocus
         />
       </View>
+      <View className="mt-8">
+        <Text className="mb-1 font-medium text-slate-400">Email</Text>
+        <TextInput
+          placeholder="Enter Email"
+          placeholderTextColor="#94a3b8"
+          className="h-16 rounded-2xl border border-slate-100 bg-white px-5 font-semibold text-lg text-slate-900 shadow-sm"
+          autoFocus
+        />
+      </View>
+      <View className="mt-8">
+        <Text className="mb-1 font-medium text-slate-400">phone Number</Text>
+        <TextInput
+          placeholder="Enter phone number"
+          placeholderTextColor="#94a3b8"
+          className="h-16 rounded-2xl border border-slate-100 bg-white px-5 font-semibold text-lg text-slate-900 shadow-sm"
+          autoFocus
+        />
+      </View>
 
       {/* Gender Selection */}
       <View className="mt-8">
