@@ -1,7 +1,5 @@
-/* eslint-disable import/no-unresolved */
- 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
 import { View, Text, TextInput, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -13,16 +11,14 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import * as Facebook from 'expo-auth-session/providers/facebook';
 import { ResponseType } from 'expo-auth-session';
-import { GoogleAuthProvider, FacebookAuthProvider, signInWithCredential } from 'firebase/auth';
-import { auth } from '../../config/firebaseConfig';
-
- import { useForm, Controller } from 'react-hook-form';
+ 
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Toast from 'react-native-toast-message';
 import zxcvbn from 'zxcvbn';
 import { useSignupRequest } from '@/hook/useAuth';
- 
+
 WebBrowser.maybeCompleteAuthSession();
 
 // --- Backend Style Validation Logic ---
@@ -116,41 +112,12 @@ export default function SignUp() {
   // Social Auth Hooks (Existing)
   const [googleRequest, googleResponse, googlePromptAsync] = Google.useIdTokenAuthRequest({
     clientId: '1026944446347-4gpshovr4kn56afecqsevj7o0assovht.apps.googleusercontent.com',
-    iosClientId: '1026944446347-0cmronpk9hvtp7faf5dqcgsv84l2e9ns.apps.googleusercontent.com',
-    androidClientId: '1026944446347-2bvmj2smroh6efc72m47kohegpoosloq.apps.googleusercontent.com',
   });
   const [fbRequest, fbResponse, fbPromptAsync] = Facebook.useAuthRequest({
     clientId: '2349725998870415',
     responseType: ResponseType.Token,
   });
 
-  React.useEffect(() => {
-    if (googleResponse?.type === 'success') {
-      const { id_token } = googleResponse.params;
-      const credential = GoogleAuthProvider.credential(id_token);
-      signInWithCredential(auth, credential)
-        .then(() => {
-          // Navigate to Onboarding
-          router.replace('/onBoardingScreen/OnBoardingStep');
-        })
-        .catch((error) => {
-          console.error('Google Sign-In Error', error);
-          alert(error.message);
-        });
-    }
-  }, [googleResponse]);
-
-  React.useEffect(() => {
-    if (fbResponse?.type === 'success') {
-      const { access_token } = fbResponse.params;
-      const credential = FacebookAuthProvider.credential(access_token);
-      signInWithCredential(auth, credential)
-        .then(() => {
-          router.replace('/onBoardingScreen/OnBoardingStep');
-        })
-        .catch((error) => {
-          console.error('Facebook Sign-In Error', error);
-          alert(error.message);
   const {
     control,
     handleSubmit,
@@ -167,7 +134,7 @@ export default function SignUp() {
       identifier: data.identifier.toLowerCase().trim(),
       password: data.password,
       confirmPassword: data.confirmPassword,
-      role: 'Client',
+      role: 'ClubOwner',
     };
 
     signupMutation(payload, {
@@ -229,6 +196,9 @@ export default function SignUp() {
             resizeMode="contain"
           />
           <Text className="font-bold text-4xl text-darkText">Sign up</Text>
+          <Text className="mt-2 text-center font-medium text-sm text-secondaryText">
+            Create an account to continue!{' '}
+          </Text>
         </View>
 
         <View className="mt-10 space-y-5">
@@ -259,7 +229,7 @@ export default function SignUp() {
 
           {/* Password Field */}
           <View>
-            <Text className="mb-2 ml-1 mt-2 text-sm text-secondaryText">Set Password</Text>
+            <Text className="mb-2 ml-1 mt-4 text-sm text-secondaryText">Set Password</Text>
             <Controller
               control={control}
               name="password"
@@ -292,7 +262,7 @@ export default function SignUp() {
 
           {/* Confirm Password Field */}
           <View>
-            <Text className="mb-2 ml-1 mt-2 text-sm text-secondaryText">Confirm Password</Text>
+            <Text className="mb-2 ml-1 mt-4 text-sm text-secondaryText">Confirm Password</Text>
             <Controller
               control={control}
               name="confirmPassword"
@@ -350,19 +320,6 @@ export default function SignUp() {
             style={{ height: 1.5, flex: 1 }}
           />
         </View>
-        <View className="mb-6">
-          <View className="mt-2 flex-row justify-between">
-            <TouchableOpacity
-              onPress={() => googlePromptAsync()}
-              className="h-14 flex-[0.47] flex-row items-center justify-center rounded-2xl bg-[#F2F2F2]">
-              <Image source={require('../../assets/images/Google.png')} className="h-6 w-6" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => fbPromptAsync()}
-              className="h-14 flex-[0.47] flex-row items-center justify-center rounded-2xl bg-[#F2F2F2]">
-              <Image source={require('../../assets/images/Facebook.png')} className="h-6 w-6" />
-            </TouchableOpacity>
-          </View>
 
         <View className="mb-6 mt-2 flex-row justify-between">
           <TouchableOpacity
