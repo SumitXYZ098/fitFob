@@ -3,16 +3,26 @@
     "name": "fitFob",
     "slug": "fitFob",
     "version": "1.0.0",
-    "scheme": ["fitFob", "fb2349725998870415"],
+    "scheme": [
+      "fitFob",
+      "fb2349725998870415"
+    ],
     "facebookAppId": "2349725998870415",
     "facebookDisplayName": "FitFob",
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-router", "expo-font"],
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "@react-native-community/datetimepicker"
+    ],
     "experiments": {
       "typedRoutes": true,
       "tsconfigPaths": true
@@ -24,7 +34,9 @@
       "image": "./assets/splash.png",
       "resizeMode": "contain"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.xyzstudio.fitfob",

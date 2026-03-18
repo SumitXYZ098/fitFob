@@ -1,109 +1,148 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import React, { useState, useRef } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Platform, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import MapView, { Marker, UrlTile, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
 
 const OnBoarding3 = () => {
   const [city, setCity] = useState('');
+  const [loading, setLoading] = useState(false);
+  const mapRef = useRef<MapView>(null);
+  
+   const [location, setLocation] = useState({
+    latitude: 28.6139,
+    longitude: 77.2090,
+    latitudeDelta: 0.01,
+    longitudeDelta: 0.01,
+  });
 
-   
-  const mapPoints = [
-    { latitude: 28.6139, longitude: 77.2090 }, // Center point
-    { latitude: 28.6200, longitude: 77.2200 }, // Top point
-    { latitude: 28.6000, longitude: 77.2150 }, // Bottom point
-  ];
+   const getCurrentLocation = async () => {
+    setLoading(true);
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Please allow location access.');
+        setLoading(false);
+        return;
+      }
+
+       let userLocation = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
+      const newCoords = {
+        latitude: userLocation.coords.latitude,
+        longitude: userLocation.coords.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      };
+
+      setLocation(newCoords);
+      mapRef.current?.animateToRegion(newCoords, 1000);
+
+    } catch (error) {
+      Alert.alert('Error', 'Could not get location. Check your GPS.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <View className="">
-      {/* --- AUTO DETECT LOCATION BOX --- */}
- 
-      <View className=" flex-row items-center justify-between rounded-3xl bg-slate-50 p-4 shadow-sm border border-slate-100">
-        <View className="flex-row items-center flex-1">
-          <View className="h-10 w-10 items-center justify-center rounded-full bg-red-50">
-            <MaterialCommunityIcons name="map-marker-radius" size={24} color="#F6163C" />
-          </View>
-          <View className="ml-3">
-            <Text className="font-bold text-slate-900 text-base">Auto-Detect Location</Text>
-            <Text className="text-xs text-slate-400">Use your current location</Text>
-          </View>
-        </View>
-        <TouchableOpacity className="rounded-full bg-white border border-slate-100  py-2 shadow-sm">
-          <Text className="font-bold text-[#F6163C]">Enable</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* --- SEARCH INPUT --- */}
-      <View className="mx-4 mt-4 flex-row items-center rounded-full bg-white px-5 py-2 shadow-lg border border-slate-50 z-10">
-        <TextInput
-          placeholder="Enter City name..."
-          className="flex-1 text-slate-600 h-10"
-          value={city}
-          onChangeText={setCity}
-          placeholderTextColor="#94a3b8"
-        />
-        <TouchableOpacity className="h-10 w-10 items-center justify-center rounded-full bg-[#F6163C]">
-          <Ionicons name="search-outline" size={20} color="white" />
-        </TouchableOpacity>
-      </View>
-
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      
       {/* --- MAP SECTION --- */}
-      <View className="mt-6 flex-1 overflow-hidden">
+      <View 
+       style={StyleSheet.absoluteFillObject} className=''>
         <MapView
-          className="w-full h-full"
-          initialRegion={{
-            latitude: 28.6139,
-            longitude: 77.2090,
-            latitudeDelta: 0.05,
-            longitudeDelta: 0.05,
-          }}
-          customMapStyle={mapStyle} // Map ko clean dikhane ke liye niche style hai
+        className='rounded-lg'
+          ref={mapRef}
+          provider={PROVIDER_GOOGLE}
+          style={StyleSheet.absoluteFillObject}
+          initialRegion={location}
+           mapType={Platform.OS === 'android' ? "none" : "standard"}
         >
-          {/* Main Marker */}
-          <Marker coordinate={mapPoints[0]}>
-            <View className="items-center">
+          <UrlTile
+            urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            maximumZ={19}
+            tileSize={256}
+          />
+
+           <Marker 
+            draggable
+            coordinate={{ 
+              latitude: location.latitude, 
+              longitude: location.longitude 
+            }}
+            onDragEnd={(e) => {
+              const newCoords = e.nativeEvent.coordinate;
+              setLocation({
+                ...location,
+                latitude: newCoords.latitude,
+                longitude: newCoords.longitude,
+              });
+            }}
+          >
+            <View className="items-center justify-center">
               <Ionicons name="location" size={50} color="#F6163C" />
-              <View className="h-2 w-2 rounded-full bg-red-200 border border-white" />
+              <View className="absolute bottom-1 w-3 h-3 bg-red-600 rounded-full border-2 border-white shadow-sm" />
             </View>
           </Marker>
-
-          {/* Smaller Markers */}
-          <Marker coordinate={mapPoints[1]}>
-            <Ionicons name="location" size={30} color="#F6163C" />
-          </Marker>
-
-          <Marker coordinate={mapPoints[2]}>
-            <Ionicons name="location" size={30} color="#F6163C" />
-          </Marker>
-
-          {/* Polyline like in screenshot */}
-          <Polyline
-            coordinates={mapPoints}
-            strokeColor="#F6163C"
-            strokeWidth={2}
-            lineDashPattern={[5, 5]} // Dotted line effect
-          />
         </MapView>
       </View>
+
+      {/* --- UI OVERLAY --- */}
+      <View className="px-5 pt-12">
+        
+        {/* Auto-Detect Card */}
+        <View 
+          className="flex-row items-center justify-between rounded-3xl bg-white p-4 mb-4"
+          style={{ elevation: 10, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10 }}
+        >
+          <View className="flex-row items-center flex-1">
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-red-50">
+              {loading ? (
+                <ActivityIndicator color="#F6163C" size="small" />
+              ) : (
+                <MaterialCommunityIcons name="map-marker-radius" size={24} color="#F6163C" />
+              )}
+            </View>
+            <View className="ml-3">
+              <Text className="font-bold text-slate-900 text-[15px]">Auto-Detect Location</Text>
+              <Text className="text-[11px] text-slate-400">Use your current location</Text>
+            </View>
+          </View>
+          <TouchableOpacity 
+            onPress={getCurrentLocation}
+            disabled={loading}
+            className="px-5 py-2 rounded-2xl border border-slate-50 bg-white"
+          >
+            <Text className="font-bold text-[#F6163C]">{loading ? '...' : 'Enable'}</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Static Search Bar (No API) */}
+        <View 
+          className="flex-row items-center rounded-full bg-white pl-6 pr-2 py-1.5"
+          style={{ elevation: 15, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 15 }}
+        >
+          <TextInput
+            placeholder="Search location..."
+            className="flex-1 text-slate-700 font-medium text-[16px]"
+            value={city}
+            onChangeText={setCity}
+            placeholderTextColor="#94a3b8"
+          />
+          <TouchableOpacity 
+            onPress={getCurrentLocation}
+            className="h-12 w-12 items-center justify-center rounded-full bg-[#F6163C]"
+          >
+            <Ionicons name="search" size={22} color="white" />
+          </TouchableOpacity>
+        </View>
+      </View>
+      
     </View>
   );
 };
-
-// Map Style for clean look (Optional)
-const mapStyle = [
-  {
-    "elementType": "geometry",
-    "stylers": [{ "color": "#f5f5f5" }]
-  },
-  {
-    "featureType": "road",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#ffffff" }]
-  },
-  {
-    "featureType": "water",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#e9e9e9" }]
-  }
-];
 
 export default OnBoarding3;

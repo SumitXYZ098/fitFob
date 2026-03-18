@@ -25,7 +25,7 @@ export default function OnBoardingStep() {
   return (
     <Container>
       {/* --- FIXED PROGRESS BAR (Sticky) --- */}
-      <View className="ios:mt-1 mt-4 flex-row justify-between  bg-white pb-2">
+      <View className=" flex-row mt-1">
         {[1, 2, 3, 4, 5].map((item) => {
           let bgColor = ' ';
           if (item === step) bgColor = 'bg-primary border-2 border-[#FFC1C1] h-4';
@@ -60,7 +60,7 @@ export default function OnBoardingStep() {
           {step === 5 && <IDUploadStep />}
         </View>
 
-        <View className="mb-10 mt-auto pt-6">
+        <View className="pt-6">
           <Button
             title={step === 4 ? 'Take Photo' : step === 5 ? 'Submit' : 'Next'}
             onPress={handleNext}

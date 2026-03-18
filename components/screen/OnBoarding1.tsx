@@ -1,69 +1,94 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { TextInput, TouchableOpacity, Image, Text, View } from 'react-native';
+// Nayi library import karein
+import CountryPicker, { CountryCode, Country } from 'react-native-country-picker-modal';
 
 const OnBoarding1 = () => {
   const [selectedGender, setSelectedGender] = useState('male');
+  
+  // Phone aur Country state
+  const [countryCode, setCountryCode] = useState<CountryCode>('IN'); // Default India
+  const [callingCode, setCallingCode] = useState('91');
+  const [phoneNumber, setPhoneNumber] = useState('');
 
   const genders = [
-    {
-      id: 'male',
-      label: 'Male',
-      icon: 'male-outline',
-      image: require('../../assets/images/male.png'),
-    },
-    {
-      id: 'female',
-      label: 'Female',
-      icon: 'female-outline',
-      image: require('../../assets/images/female.png'),
-    },
+    { id: 'male', label: 'Male', icon: 'male-outline', image: require('../../assets/images/male.png') },
+    { id: 'female', label: 'Female', icon: 'female-outline', image: require('../../assets/images/female.png') },
     { id: 'other', label: 'Other', icon: 'male-female-outline' },
   ];
 
   return (
-    <View className="px-1">
+    <View className="flex-1  bg-white">
       <Text className="font-bold text-3xl leading-tight text-slate-900">What’s your name?</Text>
       <Text className="font-bold text-3xl text-slate-900">Let’s get started.</Text>
 
-      {/* Name Input Field */}
-      <View className="mt-8">
+      {/* Name Input */}
+      <View className="mt-4">
         <Text className="mb-1 font-medium text-slate-400">Name</Text>
         <TextInput
           placeholder="Enter Name"
           placeholderTextColor="#94a3b8"
-          className="h-16 rounded-2xl border border-slate-100 bg-white px-5 font-semibold text-lg text-slate-900 shadow-sm"
-          autoFocus
+          className="h-16 rounded-2xl border border-slate-200 bg-white px-5"
         />
       </View>
-      <View className="mt-8">
+
+      {/* Email Input */}
+      <View className="mt-4">
         <Text className="mb-1 font-medium text-slate-400">Email</Text>
         <TextInput
           placeholder="Enter Email"
           placeholderTextColor="#94a3b8"
-          className="h-16 rounded-2xl border border-slate-100 bg-white px-5 font-semibold text-lg text-slate-900 shadow-sm"
-          autoFocus
+          className="h-16 rounded-2xl border border-slate-100 bg-white px-5"
         />
       </View>
-      <View className="mt-8">
-        <Text className="mb-1 font-medium text-slate-400">phone Number</Text>
-        <TextInput
-          placeholder="Enter phone number"
-          placeholderTextColor="#94a3b8"
-          className="h-16 rounded-2xl border border-slate-100 bg-white px-5 font-semibold text-lg text-slate-900 shadow-sm"
-          autoFocus
-        />
+
+      {/* Phone Number Field with Country Picker & Down Arrow */}
+      <View className="mt-4">
+        <Text className="mb-1 font-medium text-slate-400">Phone Number</Text>
+        <View className="flex-row h-16 rounded-2xl border border-slate-100 bg-white items-center px-4">
+          
+          {/* Country Selector with Flag and Arrow */}
+          <View className="flex-row items-center">
+            <CountryPicker
+              countryCode={countryCode}
+              withFilter
+              withFlag
+              withCallingCode
+              withAlphaFilter
+              onSelect={(country: Country) => {
+                setCountryCode(country.cca2);
+                setCallingCode(country.callingCode[0]);
+              }}
+            />
+            {/* Down Arrow Icon */}
+            <Ionicons name="chevron-down" size={16} color="#475569" className="ml-1" />
+          </View>
+
+          {/* Calling Code Text */}
+          <Text className="text-slate-900 font-medium ml-2">+{callingCode}</Text>
+          
+          {/* Vertical Separator */}
+          <View className="w-[1px] h-6 bg-slate-200 mx-3" />
+          
+          {/* Phone Number Input */}
+          <TextInput
+            placeholder="Enter phone number"
+            placeholderTextColor="#94a3b8"
+            keyboardType="phone-pad"
+            value={phoneNumber}
+            onChangeText={setPhoneNumber}
+            className="flex-1 h-full text-slate-900"
+          />
+        </View>
       </View>
 
       {/* Gender Selection */}
       <View className="mt-8">
         <Text className="mb-4 font-medium text-slate-400">Gender (optional)</Text>
-
         <View className="flex-row justify-between">
           {genders.map((item) => {
-            // Check if this item is currently selected
             const isSelected = selectedGender === item.id;
-
             return (
               <TouchableOpacity
                 key={item.id}
@@ -95,8 +120,7 @@ const OnBoarding1 = () => {
                     />
                   )}
                 </View>
-                <Text
-                  className={`mt-2 font-medium ${isSelected ? 'text-slate-900' : 'text-slate-400'}`}>
+                <Text className={`mt-2 font-medium ${isSelected ? 'text-slate-900' : 'text-slate-400'}`}>
                   {item.label}
                 </Text>
               </TouchableOpacity>
