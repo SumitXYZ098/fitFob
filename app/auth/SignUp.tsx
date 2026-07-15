@@ -11,7 +11,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import * as Facebook from 'expo-auth-session/providers/facebook';
 import { ResponseType } from 'expo-auth-session';
- 
+
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -134,7 +134,7 @@ export default function SignUp() {
       identifier: data.identifier.toLowerCase().trim(),
       password: data.password,
       confirmPassword: data.confirmPassword,
-      role: 'ClubOwner',
+      role: 'Client',
     };
 
     signupMutation(payload, {
