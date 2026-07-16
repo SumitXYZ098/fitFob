@@ -25,7 +25,7 @@ export default function OnBoardingStep() {
   return (
     <Container>
       {/* --- FIXED PROGRESS BAR (Sticky) --- */}
-      <View className=" flex-row mt-1">
+      <View className=" mt-1 flex-row">
         {[1, 2, 3, 4, 5].map((item) => {
           let bgColor = ' ';
           if (item === step) bgColor = 'bg-primary border-2 border-[#FFC1C1] h-4';
@@ -48,10 +48,9 @@ export default function OnBoardingStep() {
       {/* --- SCROLLABLE CONTENT --- */}
       <KeyboardAwareScrollView
         style={{ flex: 1, backgroundColor: 'white' }}
-        contentContainerStyle={{ flexGrow: 1,}}
+        contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled">
-        
         <View className="mt-6 flex-1">
           {step === 1 && <OnBoarding1 />}
           {step === 2 && <OnBoarding2 />}

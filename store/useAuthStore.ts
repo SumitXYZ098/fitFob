@@ -1,13 +1,13 @@
- import { storageAPI } from '@/utility/storage';
+import { storageAPI } from '@/utility/storage';
 import { create } from 'zustand';
 
- interface User {
+interface User {
   id: number;
   username: string;
   email: string;
   token: string;
   role?: any;
-  verification_status?:string
+  verification_status?: string;
   [key: string]: any;
 }
 
@@ -24,7 +24,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
 
   setUser: async (user, rememberMe = false) => {
-     set({ user });
+    set({ user });
 
     if (!user) {
       await storageAPI.removeItem(STORAGE_KEY);
@@ -32,7 +32,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     }
 
     try {
-       const ttlMinutes = rememberMe ? undefined : 1440;
+      const ttlMinutes = rememberMe ? undefined : 1440;
       await storageAPI.setItem(STORAGE_KEY, JSON.stringify(user), ttlMinutes);
     } catch (error) {
       console.error('Failed to save user to storage', error);
@@ -53,13 +53,13 @@ export const useAuthStore = create<AuthStore>((set) => ({
       const storedUser = await storageAPI.getItem(STORAGE_KEY);
 
       if (storedUser) {
-         const parsedUser = typeof storedUser === 'string' ? JSON.parse(storedUser) : storedUser;
+        const parsedUser = typeof storedUser === 'string' ? JSON.parse(storedUser) : storedUser;
 
         set({ user: parsedUser });
       }
     } catch (error) {
       console.error('Auth initialization failed:', error);
-       await storageAPI.removeItem(STORAGE_KEY);
+      await storageAPI.removeItem(STORAGE_KEY);
       set({ user: null });
     }
   },

@@ -1,8 +1,7 @@
-import axios from 'axios';
+import { create } from 'axios';
 import { useAuthStore } from '../store/useAuthStore';
 
-const apiInstance = axios.create({
- 
+const apiInstance = create({
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',

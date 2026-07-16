@@ -39,7 +39,7 @@ const OnBoarding2 = () => {
 
     if (selectedDate) {
       setDate(selectedDate);
-      
+
       // Formatting: DD/MM/YYYY
       let d = selectedDate.getDate().toString().padStart(2, '0');
       let m = (selectedDate.getMonth() + 1).toString().padStart(2, '0');
@@ -76,7 +76,13 @@ const OnBoarding2 = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
 
-  const handleScrollSelection = (event: NativeSyntheticEvent<NativeScrollEvent>, setter: (value: number) => void, data: number[], spacing: number, currentVal: number) => {
+  const handleScrollSelection = (
+    event: NativeSyntheticEvent<NativeScrollEvent>,
+    setter: (value: number) => void,
+    data: number[],
+    spacing: number,
+    currentVal: number
+  ) => {
     const index = Math.round(event.nativeEvent.contentOffset.x / spacing);
     const value = data[index];
     if (value !== undefined && value !== currentVal) {
@@ -93,22 +99,19 @@ const OnBoarding2 = () => {
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => setShowDatePicker(true)}
-          className="h-16 flex-row items-center justify-between rounded-2xl border border-slate-200 bg-white px-5"
-        >
-          <Text className={`text-lg font-medium ${dobText === 'DD/MM/YYYY' ? 'text-slate-300' : 'text-slate-700'}`}>
+          className="h-16 flex-row items-center justify-between rounded-2xl border border-slate-200 bg-white px-5">
+          <Text
+            className={`font-medium text-lg ${dobText === 'DD/MM/YYYY' ? 'text-slate-300' : 'text-slate-700'}`}>
             {dobText}
           </Text>
           <Ionicons name="calendar-outline" size={24} color="#94a3b8" />
         </TouchableOpacity>
 
         {showDatePicker && (
-          <View   >
-             {Platform.OS === 'ios' && (
-              <TouchableOpacity 
-                onPress={() => setShowDatePicker(false)}
-                className="items-end p-2"
-              >
-                <Text className="text-[#F6163C] font-bold text-lg">Done</Text>
+          <View>
+            {Platform.OS === 'ios' && (
+              <TouchableOpacity onPress={() => setShowDatePicker(false)} className="items-end p-2">
+                <Text className="font-bold text-lg text-[#F6163C]">Done</Text>
               </TouchableOpacity>
             )}
             <DateTimePicker
@@ -129,12 +132,16 @@ const OnBoarding2 = () => {
           <TouchableOpacity
             onPress={() => handleUnitChange('weight', 'kg')}
             className={`flex-1 items-center rounded-xl border py-3 ${weightUnit === 'kg' ? 'border-[#F6163C] bg-[#F6163C]' : 'mr-2 border-slate-200 bg-white'}`}>
-            <Text className={`font-bold ${weightUnit === 'kg' ? 'text-white' : 'text-slate-400'}`}>kg</Text>
+            <Text className={`font-bold ${weightUnit === 'kg' ? 'text-white' : 'text-slate-400'}`}>
+              kg
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => handleUnitChange('weight', 'lb')}
             className={`flex-1 items-center rounded-xl border py-3 ${weightUnit === 'lb' ? 'border-[#F6163C] bg-[#F6163C]' : 'ml-2 border-slate-200 bg-white'}`}>
-            <Text className={`font-bold ${weightUnit === 'lb' ? 'text-white' : 'text-slate-400'}`}>lb</Text>
+            <Text className={`font-bold ${weightUnit === 'lb' ? 'text-white' : 'text-slate-400'}`}>
+              lb
+            </Text>
           </TouchableOpacity>
         </View>
         <View className="mb-4 flex-row items-baseline justify-center">
@@ -142,7 +149,10 @@ const OnBoarding2 = () => {
           <Text className="ml-1 font-bold text-xl text-[#F6163C]">{weightUnit}</Text>
         </View>
         <View className="h-24 justify-center overflow-hidden rounded-2xl">
-          <View className="absolute bottom-4 left-1/2 z-10 h-12 w-1 rounded-full bg-slate-900" style={{ marginLeft: -1 }} />
+          <View
+            className="absolute bottom-4 left-1/2 z-10 h-12 w-1 rounded-full bg-slate-900"
+            style={{ marginLeft: -1 }}
+          />
           <FlatList
             key={`weight-list-${weightUnit}`}
             data={weights}
@@ -156,8 +166,14 @@ const OnBoarding2 = () => {
             contentContainerStyle={{ paddingHorizontal: (width - 80) / 2 }}
             renderItem={({ item }) => (
               <View style={{ width: TICK_SPACING }} className="items-center justify-end pb-4">
-                {item % 10 === 0 && <Text className="absolute top-2 text-[10px] font-black text-slate-400">{item}</Text>}
-                <View className={`w-[2px] rounded-full ${item % 10 === 0 ? 'h-8 bg-slate-800' : 'h-4 bg-slate-300'}`} />
+                {item % 10 === 0 && (
+                  <Text className="absolute top-2 text-[10px] font-black text-slate-400">
+                    {item}
+                  </Text>
+                )}
+                <View
+                  className={`w-[2px] rounded-full ${item % 10 === 0 ? 'h-8 bg-slate-800' : 'h-4 bg-slate-300'}`}
+                />
               </View>
             )}
           />
@@ -171,12 +187,17 @@ const OnBoarding2 = () => {
           <TouchableOpacity
             onPress={() => handleUnitChange('height', 'cm')}
             className={`flex-1 items-center rounded-xl border py-3 ${heightUnit === 'cm' ? 'border-[#F6163C] bg-[#F6163C]' : 'mr-2 border-slate-200 bg-white'}`}>
-            <Text className={`font-bold ${heightUnit === 'cm' ? 'text-white' : 'text-slate-400'}`}>cm</Text>
+            <Text className={`font-bold ${heightUnit === 'cm' ? 'text-white' : 'text-slate-400'}`}>
+              cm
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => handleUnitChange('height', 'inches')}
             className={`flex-1 items-center rounded-xl border py-3 ${heightUnit === 'inches' ? 'border-[#F6163C] bg-[#F6163C]' : 'ml-2 border-slate-200 bg-white'}`}>
-            <Text className={`font-bold ${heightUnit === 'inches' ? 'text-white' : 'text-slate-400'}`}>inches</Text>
+            <Text
+              className={`font-bold ${heightUnit === 'inches' ? 'text-white' : 'text-slate-400'}`}>
+              inches
+            </Text>
           </TouchableOpacity>
         </View>
         <View className="mb-4 flex-row items-baseline justify-center">
@@ -184,7 +205,10 @@ const OnBoarding2 = () => {
           <Text className="ml-1 font-bold text-xl text-[#F6163C]">{heightUnit}</Text>
         </View>
         <View className="h-24 justify-center overflow-hidden rounded-2xl">
-          <View className="absolute bottom-4 left-1/2 z-10 h-12 w-1 rounded-full bg-slate-900" style={{ marginLeft: -1 }} />
+          <View
+            className="absolute bottom-4 left-1/2 z-10 h-12 w-1 rounded-full bg-slate-900"
+            style={{ marginLeft: -1 }}
+          />
           <FlatList
             key={`height-list-${heightUnit}`}
             data={heights}
@@ -198,8 +222,14 @@ const OnBoarding2 = () => {
             contentContainerStyle={{ paddingHorizontal: (width - 80) / 2 }}
             renderItem={({ item }) => (
               <View style={{ width: TICK_SPACING }} className="items-center justify-end pb-4">
-                {item % 10 === 0 && <Text className="absolute top-2 text-[10px] font-black text-slate-400">{item}</Text>}
-                <View className={`w-[2px] rounded-full ${item % 10 === 0 ? 'h-8 bg-slate-800' : 'h-4 bg-slate-300'}`} />
+                {item % 10 === 0 && (
+                  <Text className="absolute top-2 text-[10px] font-black text-slate-400">
+                    {item}
+                  </Text>
+                )}
+                <View
+                  className={`w-[2px] rounded-full ${item % 10 === 0 ? 'h-8 bg-slate-800' : 'h-4 bg-slate-300'}`}
+                />
               </View>
             )}
           />

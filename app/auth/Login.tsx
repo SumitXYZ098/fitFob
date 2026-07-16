@@ -12,10 +12,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
- import Toast from 'react-native-toast-message';
+import Toast from 'react-native-toast-message';
 import { useAuthStore } from '@/store/useAuthStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useLoginRequest } from '@/hook/useAuth';
+import { useFacebookLogin, useGoogleLogin, useLoginRequest } from '@/hook/useAuth';
+import FacebookButton from '@/components/modules/FacebookButton';
+import { facebookAuthService } from '@/services/facebookAuth';
+import { googleAuthService } from '@/services/googleAuth';
+import GoogleButton from '@/components/modules/GoogleButton';
 
 // 1. Validation Schema
 const loginSchema = z.object({
@@ -27,12 +31,14 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const router = useRouter();
-  const loginMutation = useLoginRequest();
+  const { mutate: loginMutation, isPending: loginIsPending } = useLoginRequest();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const { mutate: googleLogin, isPending: googleIsPending } = useGoogleLogin();
+  const { mutate: facebookLogin, isPending: facebookIsPending } = useFacebookLogin();
 
   // Loading state shortcut
-  const isLoading = loginMutation.isPending;
+  const isLoading = loginIsPending || googleIsPending || facebookIsPending;
 
   // 2. Form Hook Setup
   const {
@@ -47,7 +53,7 @@ export default function Login() {
 
   const { setUser } = useAuthStore();
   const onSubmit = (data: LoginFormData) => {
-    loginMutation.mutate(data, {
+    loginMutation(data, {
       onSuccess: async (response) => {
         if (rememberMe) {
           await AsyncStorage.setItem('rememberUser', JSON.stringify(response));
@@ -102,6 +108,83 @@ export default function Login() {
         }
       },
     });
+  };
+
+  // Handle Google Login
+  const handleGoogleLogin = async () => {
+    console.log('Google Login: Button pressed.');
+    try {
+      console.log('Google Login: Triggering native Google Sign-In flow...');
+      const idToken = await googleAuthService.signIn();
+      console.log('Google Login: Obtained ID Token successfully. Sending to backend...');
+      googleLogin(
+        { idToken },
+        {
+          onSuccess: () => {
+            console.log('Google Login: Backend verification succeeded.');
+            Toast.show({
+              type: 'success',
+              text1: 'Google Login Success',
+              text2: 'Welcome back! 👋',
+            });
+          },
+          onError: (err: any) => {
+            console.error('Google Login: Backend verification failed:', err);
+            Toast.show({
+              type: 'error',
+              text1: 'Google Login Failed',
+              text2: err?.message || 'Google Login failed',
+            });
+          },
+        }
+      );
+    } catch (err: any) {
+      console.error('Google Login: Service error caught:', err);
+      if (err.message && !err.message.includes('cancelled')) {
+        Toast.show({
+          type: 'error',
+          text1: 'Google Login Failed',
+          text2: err?.message || 'Google Login failed',
+        });
+      }
+    }
+  };
+
+  // Handle Facebook Login
+  const handleFacebookLogin = async () => {
+    console.log('Facebook Login: Button pressed.');
+    try {
+      console.log('Facebook Login: Triggering native Facebook login...');
+      const credentials = await facebookAuthService.signIn();
+      console.log('Facebook Login: Obtained Facebook credentials. Sending to backend...');
+      facebookLogin(credentials, {
+        onSuccess: () => {
+          console.log('Facebook Login: Backend verification succeeded.');
+          Toast.show({
+            type: 'success',
+            text1: 'Facebook Login Success',
+            text2: 'Welcome back! 👋',
+          });
+        },
+        onError: (err: any) => {
+          console.error('Facebook Login: Backend verification failed:', err);
+          Toast.show({
+            type: 'error',
+            text1: 'Facebook Login Failed',
+            text2: err?.message || 'Facebook Login failed',
+          });
+        },
+      });
+    } catch (err: any) {
+      console.error('Facebook Login: Service error caught:', err);
+      if (err.message && !err.message.includes('cancelled')) {
+        Toast.show({
+          type: 'error',
+          text1: 'Facebook Login Failed',
+          text2: err?.message || 'Facebook Login failed',
+        });
+      }
+    }
   };
 
   return (
@@ -249,17 +332,17 @@ export default function Login() {
         </View>
 
         {/* Social Buttons */}
-        <View className="mb-6 mt-2 flex-row justify-between">
-          <TouchableOpacity
+        <View className="mb-6 mt-2 flex-col gap-3">
+          <GoogleButton
+            onPress={handleGoogleLogin}
+            isLoading={googleIsPending}
             disabled={isLoading}
-            className="h-14 flex-[0.47] items-center justify-center rounded-2xl bg-[#F2F2F2]">
-            <Image source={require('../../assets/images/Google.png')} className="h-6 w-6" />
-          </TouchableOpacity>
-          <TouchableOpacity
+          />
+          <FacebookButton
+            onPress={handleFacebookLogin}
+            isLoading={facebookIsPending}
             disabled={isLoading}
-            className="h-14 flex-[0.47] items-center justify-center rounded-2xl bg-[#F2F2F2]">
-            <Image source={require('../../assets/images/Facebook.png')} className="h-6 w-6" />
-          </TouchableOpacity>
+          />
         </View>
 
         {/* Footer */}

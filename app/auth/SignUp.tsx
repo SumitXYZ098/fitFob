@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,19 +6,16 @@ import { Button } from '@/components/Button';
 import { Container } from '@/components/Container';
 import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
-import * as Facebook from 'expo-auth-session/providers/facebook';
-import { ResponseType } from 'expo-auth-session';
-
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Toast from 'react-native-toast-message';
 import zxcvbn from 'zxcvbn';
-import { useSignupRequest } from '@/hook/useAuth';
-
-WebBrowser.maybeCompleteAuthSession();
+import { useFacebookLogin, useGoogleLogin, useSignupRequest } from '@/hook/useAuth';
+import GoogleButton from '@/components/modules/GoogleButton';
+import FacebookButton from '@/components/modules/FacebookButton';
+import { facebookAuthService } from '@/services/facebookAuth';
+import { googleAuthService } from '@/services/googleAuth';
 
 // --- Backend Style Validation Logic ---
 const validatePasswordSecurity = (identifier: string, password: string): string | null => {
@@ -108,15 +104,11 @@ export default function SignUp() {
   const { mutate: signupMutation, isPending } = useSignupRequest();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
+  const { mutate: googleLogin, isPending: googleIsPending } = useGoogleLogin();
+  const { mutate: facebookLogin, isPending: facebookIsPending } = useFacebookLogin();
 
-  // Social Auth Hooks (Existing)
-  const [googleRequest, googleResponse, googlePromptAsync] = Google.useIdTokenAuthRequest({
-    clientId: '1026944446347-4gpshovr4kn56afecqsevj7o0assovht.apps.googleusercontent.com',
-  });
-  const [fbRequest, fbResponse, fbPromptAsync] = Facebook.useAuthRequest({
-    clientId: '2349725998870415',
-    responseType: ResponseType.Token,
-  });
+  // Loading state shortcut
+  const isLoading = isPending || googleIsPending || facebookIsPending;
 
   const {
     control,
@@ -126,8 +118,6 @@ export default function SignUp() {
     resolver: zodResolver(signupSchema),
     defaultValues: { identifier: '', password: '', confirmPassword: '' },
   });
-
-  const isLoading = isPending;
 
   const onSubmit = (data: SignupFormData) => {
     const payload = {
@@ -172,6 +162,83 @@ export default function SignUp() {
         Toast.show({ type: 'error', text1: 'Signup Failed', text2: msg });
       },
     });
+  };
+
+  // Handle Google Login
+  const handleGoogleLogin = async () => {
+    console.log('Google Login: Button pressed.');
+    try {
+      console.log('Google Login: Triggering native Google Sign-In flow...');
+      const idToken = await googleAuthService.signIn();
+      console.log('Google Login: Obtained ID Token successfully. Sending to backend...');
+      googleLogin(
+        { idToken },
+        {
+          onSuccess: () => {
+            console.log('Google Login: Backend verification succeeded.');
+            Toast.show({
+              type: 'success',
+              text1: 'Google Login Success',
+              text2: 'Welcome back! 👋',
+            });
+          },
+          onError: (err: any) => {
+            console.error('Google Login: Backend verification failed:', err);
+            Toast.show({
+              type: 'error',
+              text1: 'Google Login Failed',
+              text2: err?.message || 'Google Login failed',
+            });
+          },
+        }
+      );
+    } catch (err: any) {
+      console.error('Google Login: Service error caught:', err);
+      if (err.message && !err.message.includes('cancelled')) {
+        Toast.show({
+          type: 'error',
+          text1: 'Google Login Failed',
+          text2: err?.message || 'Google Login failed',
+        });
+      }
+    }
+  };
+
+  // Handle Facebook Login
+  const handleFacebookLogin = async () => {
+    console.log('Facebook Login: Button pressed.');
+    try {
+      console.log('Facebook Login: Triggering native Facebook login...');
+      const credentials = await facebookAuthService.signIn();
+      console.log('Facebook Login: Obtained Facebook credentials. Sending to backend...');
+      facebookLogin(credentials, {
+        onSuccess: () => {
+          console.log('Facebook Login: Backend verification succeeded.');
+          Toast.show({
+            type: 'success',
+            text1: 'Facebook Login Success',
+            text2: 'Welcome back! 👋',
+          });
+        },
+        onError: (err: any) => {
+          console.error('Facebook Login: Backend verification failed:', err);
+          Toast.show({
+            type: 'error',
+            text1: 'Facebook Login Failed',
+            text2: err?.message || 'Facebook Login failed',
+          });
+        },
+      });
+    } catch (err: any) {
+      console.error('Facebook Login: Service error caught:', err);
+      if (err.message && !err.message.includes('cancelled')) {
+        Toast.show({
+          type: 'error',
+          text1: 'Facebook Login Failed',
+          text2: err?.message || 'Facebook Login failed',
+        });
+      }
+    }
   };
 
   return (
@@ -321,17 +388,17 @@ export default function SignUp() {
           />
         </View>
 
-        <View className="mb-6 mt-2 flex-row justify-between">
-          <TouchableOpacity
-            onPress={() => googlePromptAsync()}
-            className="h-14 flex-[0.47] items-center justify-center rounded-2xl bg-[#F2F2F2]">
-            <Image source={require('../../assets/images/Google.png')} className="h-6 w-6" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => fbPromptAsync()}
-            className="h-14 flex-[0.47] items-center justify-center rounded-2xl bg-[#F2F2F2]">
-            <Image source={require('../../assets/images/Facebook.png')} className="h-6 w-6" />
-          </TouchableOpacity>
+        <View className="mb-6 mt-2 flex-col gap-3">
+          <GoogleButton
+            onPress={handleGoogleLogin}
+            isLoading={googleIsPending}
+            disabled={isLoading}
+          />
+          <FacebookButton
+            onPress={handleFacebookLogin}
+            isLoading={facebookIsPending}
+            disabled={isLoading}
+          />
         </View>
 
         <View className="flex-row justify-center pb-6">

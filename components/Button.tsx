@@ -6,7 +6,6 @@ type ButtonProps = {
 } & TouchableOpacityProps;
 
 export const Button = forwardRef<View, ButtonProps>(({ title, ...touchableProps }, ref) => {
- 
   const isDisabled = touchableProps.disabled;
 
   return (
@@ -14,7 +13,7 @@ export const Button = forwardRef<View, ButtonProps>(({ title, ...touchableProps 
       ref={ref}
       activeOpacity={0.8}
       {...touchableProps}
- 
+
       className={`items-center justify-center rounded-2xl p-4 ${
         isDisabled ? 'bg-[#E5E7EB] ' : 'bg-[#F6163C]'
       } ${touchableProps.className}`}>

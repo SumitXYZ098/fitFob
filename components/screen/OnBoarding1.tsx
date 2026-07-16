@@ -6,15 +6,25 @@ import CountryPicker, { CountryCode, Country } from 'react-native-country-picker
 
 const OnBoarding1 = () => {
   const [selectedGender, setSelectedGender] = useState('male');
-  
+
   // Phone aur Country state
   const [countryCode, setCountryCode] = useState<CountryCode>('IN'); // Default India
   const [callingCode, setCallingCode] = useState('91');
   const [phoneNumber, setPhoneNumber] = useState('');
 
   const genders = [
-    { id: 'male', label: 'Male', icon: 'male-outline', image: require('../../assets/images/male.png') },
-    { id: 'female', label: 'Female', icon: 'female-outline', image: require('../../assets/images/female.png') },
+    {
+      id: 'male',
+      label: 'Male',
+      icon: 'male-outline',
+      image: require('../../assets/images/male.png'),
+    },
+    {
+      id: 'female',
+      label: 'Female',
+      icon: 'female-outline',
+      image: require('../../assets/images/female.png'),
+    },
     { id: 'other', label: 'Other', icon: 'male-female-outline' },
   ];
 
@@ -46,8 +56,7 @@ const OnBoarding1 = () => {
       {/* Phone Number Field with Country Picker & Down Arrow */}
       <View className="mt-4">
         <Text className="mb-1 font-medium text-slate-400">Phone Number</Text>
-        <View className="flex-row h-16 rounded-2xl border border-slate-100 bg-white items-center px-4">
-          
+        <View className="h-16 flex-row items-center rounded-2xl border border-slate-100 bg-white px-4">
           {/* Country Selector with Flag and Arrow */}
           <View className="flex-row items-center">
             <CountryPicker
@@ -66,11 +75,11 @@ const OnBoarding1 = () => {
           </View>
 
           {/* Calling Code Text */}
-          <Text className="text-slate-900 font-medium ml-2">+{callingCode}</Text>
-          
+          <Text className="ml-2 font-medium text-slate-900">+{callingCode}</Text>
+
           {/* Vertical Separator */}
-          <View className="w-[1px] h-6 bg-slate-200 mx-3" />
-          
+          <View className="mx-3 h-6 w-[1px] bg-slate-200" />
+
           {/* Phone Number Input */}
           <TextInput
             placeholder="Enter phone number"
@@ -78,7 +87,7 @@ const OnBoarding1 = () => {
             keyboardType="phone-pad"
             value={phoneNumber}
             onChangeText={setPhoneNumber}
-            className="flex-1 h-full text-slate-900"
+            className="h-full flex-1 text-slate-900"
           />
         </View>
       </View>
@@ -120,7 +129,8 @@ const OnBoarding1 = () => {
                     />
                   )}
                 </View>
-                <Text className={`mt-2 font-medium ${isSelected ? 'text-slate-900' : 'text-slate-400'}`}>
+                <Text
+                  className={`mt-2 font-medium ${isSelected ? 'text-slate-900' : 'text-slate-400'}`}>
                   {item.label}
                 </Text>
               </TouchableOpacity>

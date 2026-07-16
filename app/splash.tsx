@@ -56,8 +56,7 @@ export default function Splash() {
     <ImageBackground
       source={require('../assets/images/splash-grid.png')}
       className="flex-1 items-center justify-center bg-primary px-6"
-      resizeMode="cover"
-    >
+      resizeMode="cover">
       {/* Logo + Title */}
       <View className="items-center justify-center gap-4">
         <Animated.View style={logoStyle}>
@@ -70,20 +69,14 @@ export default function Splash() {
 
         <Animated.Text
           style={textStyle}
-          className="text-background font-bold text-[40px] leading-[44px]"
-        >
+          className="font-bold text-[40px] leading-[44px] text-background">
           fit fob
         </Animated.Text>
       </View>
 
       {/* Quote Card */}
       <View className="absolute bottom-20 flex w-full flex-col items-start gap-2 rounded-2xl bg-background px-5 py-4">
-        <Entypo
-          name="quote"
-          size={24}
-          className="scale-x-[-1]"
-          color="red"
-        />
+        <Entypo name="quote" size={24} className="scale-x-[-1]" color="red" />
         <Text className="font-sans text-sm leading-snug text-darkText">
           Every rep takes you closer.
         </Text>

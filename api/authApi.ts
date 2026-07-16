@@ -1,7 +1,7 @@
 import { ENDPOINTS } from './endpoint';
-import axios from 'axios';
+import axios, { create, isAxiosError } from 'axios';
 
-const api = axios.create({
+const api = create({
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
@@ -123,3 +123,46 @@ export const resetPasswordApi = async (payload: any) => {
     throw error;
   }
 };
+
+export interface GoogleLoginPayload {
+  idToken: string;
+}
+
+export interface FacebookLoginPayload {
+  accessToken: string;
+  userID: string;
+}
+
+export async function googleLoginApi(payload: GoogleLoginPayload) {
+  try {
+    const response = await axios.post(ENDPOINTS.GOOGLE_SIGNUP, payload);
+    return response.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      const msg =
+        error.response?.data.error?.message ??
+        error.response?.data?.message ??
+        'Google login failed';
+      console.error('Google Login API error:', msg);
+      throw new Error(msg);
+    }
+    throw new Error('An unexpected error occurred during Google login');
+  }
+}
+
+export async function facebookLoginApi(payload: FacebookLoginPayload) {
+  try {
+    const response = await axios.post(ENDPOINTS.FACEBOOK_SIGNUP, payload);
+    return response.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      const msg =
+        error.response?.data.error?.message ??
+        error.response?.data?.message ??
+        'Facebook login failed';
+      console.error('Facebook Login API error:', msg);
+      throw new Error(msg);
+    }
+    throw new Error('An unexpected error occurred during Facebook login');
+  }
+}

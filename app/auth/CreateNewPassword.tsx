@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { Button } from '@/components/Button';
 import { Container } from '@/components/Container';
 import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
- import Toast from 'react-native-toast-message';
+import Toast from 'react-native-toast-message';
 import { useResetPassword } from '@/hook/useAuth';
 
 // 1. Validation Schema

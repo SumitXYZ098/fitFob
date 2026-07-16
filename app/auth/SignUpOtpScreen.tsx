@@ -5,11 +5,11 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Button } from '@/components/Button';
 import { Container } from '@/components/Container';
 import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
- 
+
 import Toast from 'react-native-toast-message';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useResendOtp, useVerifyOtp } from '@/hook/useAuth';
- 
+
 export default function SignUpOtpScreen() {
   const router = useRouter();
   const { setUser } = useAuthStore();

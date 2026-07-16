@@ -8,18 +8,16 @@ import { Button } from '@/components/Button';
 import { Container } from '@/components/Container';
 import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
 import { useForgotSendOtp } from '@/hook/useAuth';
- 
- const forgotPasswordSchema = z.object({
-  email: z.string()
-    .min(1, 'Email is required')
-    .email('Please enter a valid email address'),
+
+const forgotPasswordSchema = z.object({
+  email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
 });
 
 type ForgotFormData = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
-  
+
   // --- ADDED: Mutation Hook ---
   const { mutate: sendOtp, isPending } = useForgotSendOtp();
 
@@ -33,13 +31,13 @@ export default function ForgotPasswordScreen() {
   });
 
   const onSubmit = (data: ForgotFormData) => {
-     sendOtp(
-      { identifier: data.email.toLowerCase().trim() }, 
+    sendOtp(
+      { identifier: data.email.toLowerCase().trim() },
       {
         onSuccess: () => {
           router.push({
-            pathname: '/auth/ForgotOtpScreen',  
-            params: { email: data.email.toLowerCase().trim() }
+            pathname: '/auth/ForgotOtpScreen',
+            params: { email: data.email.toLowerCase().trim() },
           });
         },
       }
@@ -60,57 +58,49 @@ export default function ForgotPasswordScreen() {
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ flexGrow: 1 }}
-        keyboardShouldPersistTaps="handled"
-      >
+        keyboardShouldPersistTaps="handled">
         <View className="flex-1 ">
           {/* Title Section */}
           <View className="mt-8">
-            <Text 
-              className="text-4xl font-bold text-slate-900"
-              style={{ fontFamily: 'PlusJakartaSans-Bold' }}
-            >
+            <Text
+              className="font-bold text-4xl text-slate-900"
+              style={{ fontFamily: 'PlusJakartaSans-Bold' }}>
               Forgot Password
             </Text>
-            <Text 
+            <Text
               className="mt-3 text-base text-slate-400"
-              style={{ fontFamily: 'PlusJakartaSans-Medium' }}
-            >
+              style={{ fontFamily: 'PlusJakartaSans-Medium' }}>
               Please enter your email to reset the password
             </Text>
           </View>
 
           {/* Input Section */}
           <View className="mt-10">
-            <Text className="mb-2 ml-1 text-sm text-slate-400 font-medium">
-              Email Address
-            </Text>
+            <Text className="mb-2 ml-1 font-medium text-sm text-slate-400">Email Address</Text>
             <Controller
               control={control}
               name="email"
               render={({ field: { onChange, onBlur, value } }) => (
-                <View 
+                <View
                   className={`h-14 justify-center rounded-2xl border ${
                     errors.email ? 'border-red-500' : 'border-slate-200'
-                  } bg-white px-4`}
-                >
+                  } bg-white px-4`}>
                   <TextInput
                     placeholder="Enter Gmail"
                     placeholderTextColor="#CBD5E1"
                     onBlur={onBlur}
                     onChangeText={onChange}
                     value={value}
-                    className="h-full text-slate-900 text-base"
+                    className="h-full text-base text-slate-900"
                     autoCapitalize="none"
                     keyboardType="email-address"
-                    editable={!isPending} 
+                    editable={!isPending}
                   />
                 </View>
               )}
             />
             {errors.email && (
-              <Text className="ml-1 mt-1 text-xs text-red-500">
-                {errors.email.message}
-              </Text>
+              <Text className="ml-1 mt-1 text-xs text-red-500">{errors.email.message}</Text>
             )}
           </View>
 
@@ -120,7 +110,7 @@ export default function ForgotPasswordScreen() {
           {/* Action Button */}
           <View className="mb-6">
             <Button
-              title={isPending ? "Sending..." : "Reset Password"}
+              title={isPending ? 'Sending...' : 'Reset Password'}
               onPress={handleSubmit(onSubmit)}
               disabled={isPending}
             />

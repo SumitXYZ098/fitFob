@@ -8,6 +8,8 @@ import {
   resetPasswordApi,
   signupStep1Api,
   verifyOtpApi,
+  googleLoginApi,
+  facebookLoginApi,
 } from '@/api/authApi';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useRouter } from 'expo-router';
@@ -44,38 +46,39 @@ export const useResendOtp = () => {
     },
   });
 };
+
 export const useVerifyOtp = () => {
   return useMutation({
     mutationFn: verifyOtpApi,
-   
   });
 };
+
 export const useLoginRequest = () => {
   const { setUser } = useAuthStore();
   const router = useRouter();
-return useMutation({
-  mutationFn: loginUserApi,
-  onSuccess: (data) => {
-    if (data && data.jwt && data.user) {
-      console.log('✅ Login Success:', data.user.username);
+  return useMutation({
+    mutationFn: loginUserApi,
+    onSuccess: (data) => {
+      if (data && data.jwt && data.user) {
+        console.log('✅ Login Success:', data.user.username);
 
-      const userWithToken = {
-        ...data.user,
-        token: data.jwt,
-      };
+        const userWithToken = {
+          ...data.user,
+          token: data.jwt,
+        };
 
-      setUser(userWithToken, true);
-      console.log(userWithToken, 'usr Data');
+        setUser(userWithToken, true);
+        console.log(userWithToken, 'usr Data');
 
-      // 🚀 Always go to onboarding flow checker
-      router.replace('/onBoardingScreen/OnBoardingStep');
-    }
-  },
+        // 🚀 Always go to onboarding flow checker
+        router.replace('/onBoardingScreen/OnBoardingStep');
+      }
+    },
 
-  onError: (error: any) => {
-    console.error('❌ Login Error:', error.response?.data || error.message);
-  },
-});
+    onError: (error: any) => {
+      console.error('❌ Login Error:', error.response?.data || error.message);
+    },
+  });
 };
 
 export const useForgotSendOtp = () => {
@@ -152,4 +155,73 @@ export const useResetPassword = () => {
     },
   });
 };
-    
+
+export const useGoogleLogin = () => {
+  const { setUser } = useAuthStore();
+  const router = useRouter();
+  return useMutation({
+    mutationFn: googleLoginApi,
+    onSuccess: (data) => {
+      if (data && data.jwt && data.user) {
+        console.log('✅ Google Login Success:', data.user.username);
+
+        const userWithToken = {
+          ...data.user,
+          token: data.jwt,
+        };
+
+        setUser(userWithToken, true);
+        console.log(userWithToken, 'usr Data');
+
+        router.replace('/onBoardingScreen/OnBoardingStep');
+      }
+    },
+    onError: (error: any) => {
+      console.error('❌ Google Login Error:', error.response?.data || error.message);
+      Toast.show({
+        type: 'error',
+        text1: 'Google Sign-In Failed',
+        text2:
+          error.response?.data?.error?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          'Something went wrong',
+      });
+    },
+  });
+};
+
+export const useFacebookLogin = () => {
+  const { setUser } = useAuthStore();
+  const router = useRouter();
+  return useMutation({
+    mutationFn: facebookLoginApi,
+    onSuccess: (data) => {
+      if (data && data.jwt && data.user) {
+        console.log('✅ Google Login Success:', data.user.username);
+
+        const userWithToken = {
+          ...data.user,
+          token: data.jwt,
+        };
+
+        setUser(userWithToken, true);
+        console.log(userWithToken, 'usr Data');
+
+        router.replace('/onBoardingScreen/OnBoardingStep');
+      }
+    },
+    onError: (error: any) => {
+      console.error('❌ Google Login Error:', error.response?.data || error.message);
+      Toast.show({
+        type: 'error',
+        text1: 'Google Sign-In Failed',
+        text2:
+          error.response?.data?.error?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          'Something went wrong',
+      });
+    },
+  });
+};

@@ -5,8 +5,8 @@ export default function HomeScreen() {
   return (
     <Container>
       <View className="flex-1 items-center justify-center">
-        <Text className="text-2xl font-bold">Welcome directly to FitFob!</Text>
-        <Text className="text-secondaryText mt-4">This is your dashboard.</Text>
+        <Text className="font-bold text-2xl">Welcome directly to FitFob!</Text>
+        <Text className="mt-4 text-secondaryText">This is your dashboard.</Text>
       </View>
     </Container>
   );

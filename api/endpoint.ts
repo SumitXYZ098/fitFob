@@ -9,4 +9,6 @@ export const ENDPOINTS = {
   FORGOT_RESEND_OTP: `${BASE_URL}/api/auth/resend-reset-otp`,
   FORGOT_VERIFY_OTP: `${BASE_URL}/api/auth/verify-otp`,
   FORGOT_SET_PASSWORD: `${BASE_URL}/api/auth/reset-password`,
+  GOOGLE_SIGNUP: `${BASE_URL}/api/client/google`,
+  FACEBOOK_SIGNUP: `${BASE_URL}/api/client/facebook`,
 };

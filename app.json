@@ -3,16 +3,19 @@
     "name": "fitFob",
     "slug": "fitFob",
     "version": "1.0.0",
-    "scheme": [
-      "fitFob",
-      "fb2349725998870415"
-    ],
+    "scheme": ["fitFob", "fb2349725998870415"],
     "facebookAppId": "2349725998870415",
     "facebookDisplayName": "FitFob",
-    "platforms": [
-      "ios",
-      "android"
-    ],
+    "platforms": ["ios", "android"],
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
+    "assetBundlePatterns": ["**/*"],
     "web": {
       "bundler": "metro",
       "output": "static",
@@ -21,33 +24,34 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.694317966222-fr234kqdgdcn5hm5q9vb5vudqnq8c3b1"
+        }
+      ],
+      [
+        "react-native-fbsdk-next",
+        {
+          "appID": "1017733454437395",
+          "clientToken": "51394908565334eb54ab6530f699c04d",
+          "displayName": "FitFob",
+          "scheme": "fb1017733454437395",
+          "iosUserTrackingPermission": "This identifier will be used to deliver personalized ads to you."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
       "tsconfigPaths": true
     },
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain"
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.xyzstudio.fitfob",
-      "googleServicesFile": "./GoogleService-Info.plist"
-    },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png"
-      },
-      "package": "com.xyzstudio.fitfob",
-      "googleServicesFile": "./google-services.json"
+      "package": "com.xyzstudio.fitfob"
+    },
+    "ios": {
+      "bundleIdentifier": "com.xyzstudio.fitfob",
+      "supportsTablet": true
     }
   }
 }
