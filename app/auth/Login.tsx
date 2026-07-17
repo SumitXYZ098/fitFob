@@ -70,7 +70,9 @@ export default function Login() {
       },
 
       onError: (error: any) => {
-        const serverMsg = error?.response?.data?.error?.message || 'Something went wrong';
+        console.log('Login Error Detail:', error?.response?.data || error.message || error);
+        const serverMsg =
+          error?.response?.data?.error?.message || error?.message || 'Something went wrong';
         const status = error?.response?.status;
 
         if (status === 401 || serverMsg.toLowerCase().includes('password')) {
@@ -129,7 +131,6 @@ export default function Login() {
             });
           },
           onError: (err: any) => {
-            console.error('Google Login: Backend verification failed:', err);
             Toast.show({
               type: 'error',
               text1: 'Google Login Failed',
@@ -139,8 +140,8 @@ export default function Login() {
         }
       );
     } catch (err: any) {
-      console.error('Google Login: Service error caught:', err);
       if (err.message && !err.message.includes('cancelled')) {
+        console.log('Google Login: Error - ', err?.message);
         Toast.show({
           type: 'error',
           text1: 'Google Login Failed',
@@ -167,7 +168,6 @@ export default function Login() {
           });
         },
         onError: (err: any) => {
-          console.error('Facebook Login: Backend verification failed:', err);
           Toast.show({
             type: 'error',
             text1: 'Facebook Login Failed',
@@ -176,7 +176,6 @@ export default function Login() {
         },
       });
     } catch (err: any) {
-      console.error('Facebook Login: Service error caught:', err);
       if (err.message && !err.message.includes('cancelled')) {
         Toast.show({
           type: 'error',

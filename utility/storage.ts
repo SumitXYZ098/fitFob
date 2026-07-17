@@ -4,8 +4,8 @@ export const storageAPI = {
   setItem: async (key: string, value: string, ttlMinutes?: number) => {
     try {
       await AsyncStorage.setItem(key, value);
-    } catch (e) {
-      console.error('Storage Error (Set):', e);
+    } catch (error: any) {
+      throw new Error(error.message || 'An error occurred during logout.');
     }
   },
 
@@ -13,17 +13,16 @@ export const storageAPI = {
     try {
       const value = await AsyncStorage.getItem(key);
       return value;
-    } catch (e) {
-      console.error('Storage Error (Get):', e);
-      return null;
+    } catch (error: any) {
+      throw new Error(error.message || 'An error occurred during logout.');
     }
   },
 
   removeItem: async (key: string) => {
     try {
       await AsyncStorage.removeItem(key);
-    } catch (e) {
-      console.error('Storage Error (Remove):', e);
+    } catch (error: any) {
+      throw new Error(error.message || 'An error occurred during logout.');
     }
   },
 };

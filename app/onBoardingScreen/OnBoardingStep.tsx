@@ -1,23 +1,39 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { useState, useRef } from 'react';
+import { useRouter } from 'expo-router';
+import { View, TouchableOpacity } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Container } from '@/components/Container';
 import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
-import OnBoarding1 from '../../components/screen/OnBoarding1';
-import OnBoarding2 from '@/components/screen/OnBoarding2';
-
-import { useRouter } from 'expo-router';
-import OnBoarding3 from '@/components/screen/OnBoarding3';
+import BasicDetails from '@/components/screens/OnBoardingScreens/BasicDetails';
+import BodyInfo from '@/components/screens/OnBoardingScreens/BodyInfo';
+import LocationScreen from '@/components/screens/OnBoardingScreens/LocationScreen';
+import SelfieScreen from '@/components/screens/OnBoardingScreens/SelfieScreen';
+import GovernmentId from '@/components/screens/OnBoardingScreens/GovernmentId';
 
 export default function OnBoardingStep() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const totalSteps = 5;
 
+  // Selfie state & ref
+  const selfieRef = useRef<any>(null);
+  const [selfieUri, setSelfieUri] = useState<string | null>(null);
+
+  // Government ID state & ref
+  const govIdRef = useRef<any>(null);
+  const [govIdUri, setGovIdUri] = useState<string | null>(null);
+
   const handleNext = () => {
-    if (step < totalSteps) setStep(step + 1);
-    else {
+    if (step === 4 && !selfieUri) {
+      // Trigger camera capture in SelfieScreen
+      selfieRef.current?.takePhoto();
+    } else if (step === 5 && !govIdUri) {
+      // Trigger ID upload selection in GovernmentId
+      govIdRef.current?.uploadId();
+    } else if (step < totalSteps) {
+      setStep(step + 1);
+    } else {
       router.replace('/(tabs)');
     }
   };
@@ -52,16 +68,26 @@ export default function OnBoardingStep() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled">
         <View className="mt-6 flex-1">
-          {step === 1 && <OnBoarding1 />}
-          {step === 2 && <OnBoarding2 />}
-          {step === 3 && <OnBoarding3 />}
-          {step === 4 && <SelfieStep />}
-          {step === 5 && <IDUploadStep />}
+          {step === 1 && <BasicDetails />}
+          {step === 2 && <BodyInfo />}
+          {step === 3 && <LocationScreen />}
+          {step === 4 && (
+            <SelfieScreen ref={selfieRef} selfieUri={selfieUri} setSelfieUri={setSelfieUri} />
+          )}
+          {step === 5 && (
+            <GovernmentId ref={govIdRef} govIdUri={govIdUri} setGovIdUri={setGovIdUri} />
+          )}
         </View>
 
         <View className="pt-6">
           <Button
-            title={step === 4 ? 'Take Photo' : step === 5 ? 'Submit' : 'Next'}
+            title={
+              step === 4
+                ? (selfieUri ? 'Next' : 'Take Photo')
+                : step === 5
+                ? (govIdUri ? 'Submit' : 'Upload government ID')
+                : 'Next'
+            }
             onPress={handleNext}
           />
         </View>
@@ -69,14 +95,3 @@ export default function OnBoardingStep() {
     </Container>
   );
 }
-
-const SelfieStep = () => (
-  <View>
-    <Text className="font-bold text-2xl">Upload a Selfie</Text>
-  </View>
-);
-const IDUploadStep = () => (
-  <View>
-    <Text className="font-bold text-2xl">Verify your ID</Text>
-  </View>
-);

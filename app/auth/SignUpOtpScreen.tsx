@@ -130,8 +130,6 @@ export default function SignUpOtpScreen() {
         const errorData = error.response?.data;
         const msg = errorData?.error?.message || errorData?.message || 'Verification Failed';
 
-        console.error('❌ OTP Verify Error:', msg);
-
         Toast.show({
           type: 'error',
           text1: 'Verification Failed',

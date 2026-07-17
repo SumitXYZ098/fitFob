@@ -183,7 +183,6 @@ export default function SignUp() {
             });
           },
           onError: (err: any) => {
-            console.error('Google Login: Backend verification failed:', err);
             Toast.show({
               type: 'error',
               text1: 'Google Login Failed',
@@ -193,7 +192,6 @@ export default function SignUp() {
         }
       );
     } catch (err: any) {
-      console.error('Google Login: Service error caught:', err);
       if (err.message && !err.message.includes('cancelled')) {
         Toast.show({
           type: 'error',
@@ -221,7 +219,6 @@ export default function SignUp() {
           });
         },
         onError: (err: any) => {
-          console.error('Facebook Login: Backend verification failed:', err);
           Toast.show({
             type: 'error',
             text1: 'Facebook Login Failed',
@@ -230,7 +227,6 @@ export default function SignUp() {
         },
       });
     } catch (err: any) {
-      console.error('Facebook Login: Service error caught:', err);
       if (err.message && !err.message.includes('cancelled')) {
         Toast.show({
           type: 'error',

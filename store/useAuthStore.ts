@@ -34,8 +34,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
     try {
       const ttlMinutes = rememberMe ? undefined : 1440;
       await storageAPI.setItem(STORAGE_KEY, JSON.stringify(user), ttlMinutes);
-    } catch (error) {
-      console.error('Failed to save user to storage', error);
+    } catch (error: any) {
+      throw new Error(error.message || 'An error occurred during logout.');
     }
   },
 
@@ -43,8 +43,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
     try {
       await storageAPI.removeItem(STORAGE_KEY);
       set({ user: null });
-    } catch (error) {
-      console.error('Logout failed', error);
+    } catch (error: any) {
+      throw new Error(error.message || 'An error occurred during logout.');
     }
   },
 
@@ -57,10 +57,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
         set({ user: parsedUser });
       }
-    } catch (error) {
-      console.error('Auth initialization failed:', error);
+    } catch (error: any) {
       await storageAPI.removeItem(STORAGE_KEY);
       set({ user: null });
+      throw new Error(error.message || 'An error occurred during logout.');
     }
   },
 }));

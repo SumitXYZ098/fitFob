@@ -47,11 +47,37 @@
       "tsconfigPaths": true
     },
     "android": {
-      "package": "com.xyzstudio.fitfob"
+      "package": "com.xyzstudio.fitfob",
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.INTERNET"
+      ]
     },
     "ios": {
       "bundleIdentifier": "com.xyzstudio.fitfob",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you.",
+        "SKAdNetworkItems": [
+          {
+            "SKAdNetworkIdentifier": "v9wttpbfk9.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "n38lu8286q.skadnetwork"
+          }
+        ]
+      }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b720e97c-dc59-474b-94d2-645e557ad874"
+      }
     }
   }
 }

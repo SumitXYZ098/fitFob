@@ -4,7 +4,7 @@ import { TextInput, TouchableOpacity, Image, Text, View } from 'react-native';
 // Nayi library import karein
 import CountryPicker, { CountryCode, Country } from 'react-native-country-picker-modal';
 
-const OnBoarding1 = () => {
+const BasicDetails = () => {
   const [selectedGender, setSelectedGender] = useState('male');
 
   // Phone aur Country state
@@ -17,13 +17,13 @@ const OnBoarding1 = () => {
       id: 'male',
       label: 'Male',
       icon: 'male-outline',
-      image: require('../../assets/images/male.png'),
+      image: require('../../../assets/images/male.png'),
     },
     {
       id: 'female',
       label: 'Female',
       icon: 'female-outline',
-      image: require('../../assets/images/female.png'),
+      image: require('../../../assets/images/female.png'),
     },
     { id: 'other', label: 'Other', icon: 'male-female-outline' },
   ];
@@ -142,4 +142,4 @@ const OnBoarding1 = () => {
   );
 };
 
-export default OnBoarding1;
+export default BasicDetails;

@@ -15,7 +15,6 @@ export const signupStep1Api = async (payload: any) => {
     const response = await api.post(ENDPOINTS.REGISTER, payload);
     return response.data;
   } catch (error: any) {
-    console.error('❌ Signup API Error:', error.response?.data || error.message);
     throw error;
   }
 };
@@ -30,7 +29,6 @@ export const resendOtpApi = async (payload: { identifier: string; signupToken: s
     });
     return response.data;
   } catch (error: any) {
-    console.error('❌ Resend OTP API Error:', error.response?.data || error.message);
     throw error;
   }
 };
@@ -52,12 +50,6 @@ export const verifyOtpApi = async (payload: any) => {
     console.log(response.data);
     return response.data;
   } catch (error: any) {
-    const errorData = error.response?.data;
-    console.error('❌ Verify OTP API Error Details:', {
-      status: error.response?.status,
-      message: errorData?.error?.message || errorData?.message || error.message,
-      details: errorData?.error?.details || errorData?.details || 'No details provided',
-    });
     throw error;
   }
 };
@@ -65,11 +57,10 @@ export const verifyOtpApi = async (payload: any) => {
 // 4. Login
 export const loginUserApi = async (payload: any) => {
   try {
-    console.log('📡 Login Payload:', payload);
+    console.log('📡 Login Update Payload:', payload);
     const response = await api.post(ENDPOINTS.LOGIN, payload);
     return response.data;
   } catch (error: any) {
-    console.error('❌ Login API Error:', error.response?.data || error.message);
     throw error;
   }
 };
@@ -119,7 +110,6 @@ export const resetPasswordApi = async (payload: any) => {
     const response = await api.post(ENDPOINTS.FORGOT_SET_PASSWORD, finalPayload);
     return response.data;
   } catch (error: any) {
-    console.error('❌ Reset Password API Error:', error.response?.data || error.message);
     throw error;
   }
 };
@@ -143,7 +133,7 @@ export async function googleLoginApi(payload: GoogleLoginPayload) {
         error.response?.data.error?.message ??
         error.response?.data?.message ??
         'Google login failed';
-      console.error('Google Login API error:', msg);
+
       throw new Error(msg);
     }
     throw new Error('An unexpected error occurred during Google login');
@@ -160,7 +150,7 @@ export async function facebookLoginApi(payload: FacebookLoginPayload) {
         error.response?.data.error?.message ??
         error.response?.data?.message ??
         'Facebook login failed';
-      console.error('Facebook Login API error:', msg);
+
       throw new Error(msg);
     }
     throw new Error('An unexpected error occurred during Facebook login');

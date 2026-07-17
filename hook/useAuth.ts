@@ -36,7 +36,6 @@ export const useResendOtp = () => {
     },
     onError: (error: any) => {
       const errorMsg = error.response?.data?.error?.message || 'Failed to resend OTP.';
-      console.error('❌ Resend OTP Error:', errorMsg);
       Toast.show({
         type: 'error',
         text1: 'Request Failed',
@@ -74,10 +73,6 @@ export const useLoginRequest = () => {
         router.replace('/onBoardingScreen/OnBoardingStep');
       }
     },
-
-    onError: (error: any) => {
-      console.error('❌ Login Error:', error.response?.data || error.message);
-    },
   });
 };
 
@@ -94,7 +89,6 @@ export const useForgotSendOtp = () => {
     },
     onError: (error: any) => {
       const msg = error.response?.data?.error?.message || 'Failed to send OTP';
-      console.error('❌ Forgot OTP Error:', msg);
       Toast.show({ type: 'error', text1: 'Error', text2: msg });
     },
   });
@@ -113,7 +107,6 @@ export const useForgotResendOtp = () => {
     },
     onError: (error: any) => {
       const msg = error.response?.data?.error?.message || 'Failed to resend OTP';
-      console.error('❌ Forgot Resend OTP Error:', msg);
       Toast.show({ type: 'error', text1: 'Error', text2: msg });
     },
   });
@@ -177,7 +170,6 @@ export const useGoogleLogin = () => {
       }
     },
     onError: (error: any) => {
-      console.error('❌ Google Login Error:', error.response?.data || error.message);
       Toast.show({
         type: 'error',
         text1: 'Google Sign-In Failed',
@@ -212,7 +204,6 @@ export const useFacebookLogin = () => {
       }
     },
     onError: (error: any) => {
-      console.error('❌ Google Login Error:', error.response?.data || error.message);
       Toast.show({
         type: 'error',
         text1: 'Google Sign-In Failed',

@@ -11,4 +11,14 @@ export const ENDPOINTS = {
   FORGOT_SET_PASSWORD: `${BASE_URL}/api/auth/reset-password`,
   GOOGLE_SIGNUP: `${BASE_URL}/api/client/google`,
   FACEBOOK_SIGNUP: `${BASE_URL}/api/client/facebook`,
+
+  // Basic Details
+  BASIC_DETAILS: `${BASE_URL}/api/pending-client/basic-info`,
+  BODY_INFO: `${BASE_URL}/api/pending-client/body-info`,
+  LOCATION: `${BASE_URL}/api/pending-client/location`,
+  SELFIE: `${BASE_URL}/api/pending-client/selfie`,
+  GOVERNMENT_ID: `${BASE_URL}/api/pending-client/government-id`,
+  VERIFY_PENDING_CLIENT: `${BASE_URL}/api/pending-client/verify`,
+
+  // Dashboard
 };

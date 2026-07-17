@@ -74,7 +74,6 @@ export const facebookAuthService = {
 
       return { accessToken, userID };
     } catch (error: any) {
-      console.error('Facebook SDK Login error details:', error);
       throw new Error(error.message || 'An error occurred during Facebook authentication.');
     }
   },
@@ -86,8 +85,8 @@ export const facebookAuthService = {
     if (!LoginManager) return;
     try {
       LoginManager.logOut();
-    } catch (error) {
-      console.error('Facebook Sign-Out failed:', error);
+    } catch (error: any) {
+      throw new Error(error.message || 'An error occurred during Facebook Sign-Out.');
     }
   },
 };

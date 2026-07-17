@@ -3,6 +3,7 @@ import '../global.css';
 import { SplashScreen, Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import Toast from 'react-native-toast-message';
 
 const queryClient = new QueryClient();
 export default function Layout() {
@@ -21,6 +22,7 @@ export default function Layout() {
   return (
     <QueryClientProvider client={queryClient}>
       <Stack screenOptions={{ headerShown: false }} />
+      <Toast />
     </QueryClientProvider>
   );
 }

@@ -76,7 +76,6 @@ export const googleAuthService = {
       } else if (error.code === googleStatusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
         throw new Error('Google Play Services are not available or outdated on this device.');
       } else {
-        console.error('Google Sign-In service error details:', error);
         // Include the error code (e.g. Code 10 / 12500 Developer Error) in the message for easier console debugging
         const codeText = error.code ? ` (Error Code: ${error.code})` : '';
         throw new Error(
@@ -93,8 +92,8 @@ export const googleAuthService = {
     if (!GoogleSignin) return;
     try {
       await GoogleSignin.signOut();
-    } catch (error) {
-      console.error('Google Sign-Out failed:', error);
+    } catch (error: any) {
+      throw new Error(error.message || 'An error occurred during Google Sign-Out.');
     }
   },
 };

@@ -50,7 +50,7 @@ export default function Splash() {
     }, 1500);
 
     return () => clearTimeout(t);
-  }, []);
+  }, [logoOpacity, router, textOpacity, translateY]);
 
   return (
     <ImageBackground

@@ -1,0 +1,41 @@
+{
+  "cli": {
+    "version": ">= 21.0.1",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk",
+        "channel": "development",
+        "gradleCommand": ":app:assembleDebug"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://backend.fitfob.com",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "694317966222-fr234kqdgdcn5hm5q9vb5vudqnq8c3b1.apps.googleusercontent.com"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://backend.fitfob.com",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "694317966222-fr234kqdgdcn5hm5q9vb5vudqnq8c3b1.apps.googleusercontent.com"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://backend.fitfob.com",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "694317966222-fr234kqdgdcn5hm5q9vb5vudqnq8c3b1.apps.googleusercontent.com"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

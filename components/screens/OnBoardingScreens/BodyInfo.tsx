@@ -16,7 +16,7 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 const { width } = Dimensions.get('window');
 const TICK_SPACING = 15;
 
-const OnBoarding2 = () => {
+const BodyInfo = () => {
   const [date, setDate] = useState(new Date(2000, 0, 1));
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dobText, setDobText] = useState('DD/MM/YYYY');
@@ -239,4 +239,4 @@ const OnBoarding2 = () => {
   );
 };
 
-export default OnBoarding2;
+export default BodyInfo;
