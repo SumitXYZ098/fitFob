@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import {
 import MapView, { Marker, UrlTile, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
+import { useClientLocation } from '@/hook/useClient';
 
 interface Suggestion {
   place_id: number;
@@ -22,7 +23,16 @@ interface Suggestion {
   lon: string;
 }
 
-const LocationScreen = () => {
+export interface LocationScreenRef {
+  submit: () => Promise<boolean>;
+}
+
+interface LocationScreenProps {
+  prefill?: any;
+}
+
+const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ prefill }, ref) => {
+  const { mutateAsync } = useClientLocation();
   const [city, setCity] = useState('');
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -30,16 +40,26 @@ const LocationScreen = () => {
   const mapRef = useRef<MapView>(null);
 
   const [location, setLocation] = useState({
-    latitude: 28.6139,
-    longitude: 77.209,
+    latitude: prefill?.latitude ? parseFloat(prefill.latitude) : 28.6139,
+    longitude: prefill?.longitude ? parseFloat(prefill.longitude) : 77.209,
     latitudeDelta: 0.01,
     longitudeDelta: 0.01,
   });
 
-  // Auto-Detect Location on Mount
-  useEffect(() => {
-    getCurrentLocation();
-  }, []);
+  useImperativeHandle(ref, () => ({
+    submit: async () => {
+      try {
+        await mutateAsync({
+          latitude: location.latitude.toString(),
+          longitude: location.longitude.toString(),
+        });
+        return true;
+      } catch (error) {
+        console.error('Error submitting location:', error);
+        return false;
+      }
+    },
+  }));
 
   const getCurrentLocation = async () => {
     setLoading(true);
@@ -64,7 +84,7 @@ const LocationScreen = () => {
 
       setLocation(newCoords);
       mapRef.current?.animateToRegion(newCoords, 1000);
-      
+
       // Get readable address name
       reverseGeocode(newCoords.latitude, newCoords.longitude);
     } catch (error) {
@@ -93,6 +113,25 @@ const LocationScreen = () => {
       console.log('Error reverse geocoding:', error);
     }
   };
+
+  // Auto-Detect Location on Mount or use prefilled coordinates
+  useEffect(() => {
+    if (prefill?.latitude && prefill?.longitude) {
+      const lat = parseFloat(prefill.latitude);
+      const lon = parseFloat(prefill.longitude);
+      const newCoords = {
+        latitude: lat,
+        longitude: lon,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      };
+      setLocation(newCoords);
+      mapRef.current?.animateToRegion(newCoords, 1000);
+      reverseGeocode(lat, lon);
+    } else {
+      getCurrentLocation();
+    }
+  }, [prefill]);
 
   // Forward Geocode: Search coordinates from text query
   const searchLocation = async () => {
@@ -129,7 +168,10 @@ const LocationScreen = () => {
           setSuggestions(data);
         }
       } else {
-        Alert.alert('Location not found', 'We could not find the location you searched for. Please try again.');
+        Alert.alert(
+          'Location not found',
+          'We could not find the location you searched for. Please try again.'
+        );
       }
     } catch (error) {
       console.error('Error forward geocoding:', error);
@@ -194,7 +236,7 @@ const LocationScreen = () => {
       </View>
 
       {/* --- UI OVERLAY --- */}
-      <View className="px-5 pt-12 relative z-50">
+      <View className="relative z-50 px-5 pt-12">
         {/* Auto-Detect Card */}
         <View
           className="mb-4 flex-row items-center justify-between rounded-3xl bg-white p-4"
@@ -222,7 +264,7 @@ const LocationScreen = () => {
 
         {/* Dynamic Search Bar */}
         <View
-          className="flex-row items-center rounded-full bg-white py-1.5 pl-6 pr-2 mb-2"
+          className="mb-2 flex-row items-center rounded-full bg-white py-1.5 pl-6 pr-2"
           style={{ elevation: 15, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 15 }}>
           <TextInput
             placeholder="Search location..."
@@ -251,8 +293,14 @@ const LocationScreen = () => {
         {/* Suggestions Dropdown */}
         {suggestions.length > 0 && (
           <View
-            className="bg-white rounded-3xl mt-1 overflow-hidden"
-            style={{ elevation: 20, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 20, maxHeight: 220 }}>
+            className="mt-1 overflow-hidden rounded-3xl bg-white"
+            style={{
+              elevation: 20,
+              shadowColor: '#000',
+              shadowOpacity: 0.15,
+              shadowRadius: 20,
+              maxHeight: 220,
+            }}>
             <ScrollView nestedScrollEnabled={true} keyboardShouldPersistTaps="handled">
               {suggestions.map((item) => (
                 <TouchableOpacity
@@ -260,7 +308,7 @@ const LocationScreen = () => {
                   onPress={() => handleSelectSuggestion(item)}
                   className="flex-row items-center border-b border-slate-50 p-4 active:bg-slate-50">
                   <Ionicons name="location-outline" size={20} color="#94a3b8" className="mr-3" />
-                  <Text className="flex-1 text-sm font-medium text-slate-700" numberOfLines={2}>
+                  <Text className="flex-1 font-medium text-sm text-slate-700" numberOfLines={2}>
                     {item.display_name}
                   </Text>
                 </TouchableOpacity>
@@ -271,6 +319,8 @@ const LocationScreen = () => {
       </View>
     </View>
   );
-};
+});
+
+LocationScreen.displayName = 'LocationScreen';
 
 export default LocationScreen;

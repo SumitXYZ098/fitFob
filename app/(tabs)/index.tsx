@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native';
-import { Container } from '@/components/Container';
+import { Container } from '@/components/modules/Container';
 
 export default function HomeScreen() {
   return (

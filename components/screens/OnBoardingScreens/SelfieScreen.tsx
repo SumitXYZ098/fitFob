@@ -11,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Camera, CameraView } from 'expo-camera';
 import { manipulateAsync, FlipType, SaveFormat } from 'expo-image-manipulator';
+import { useClientSelfie } from '@/hook/useClient';
 
 interface SelfieScreenProps {
   selfieUri: string | null;
@@ -19,6 +20,7 @@ interface SelfieScreenProps {
 
 export interface SelfieScreenRef {
   takePhoto: () => Promise<void>;
+  submit: () => Promise<boolean>;
 }
 
 const SelfieScreen = forwardRef<SelfieScreenRef, SelfieScreenProps>(
@@ -77,9 +79,24 @@ const SelfieScreen = forwardRef<SelfieScreenRef, SelfieScreenProps>(
       }
     };
 
-    // Expose the takePhoto function to the parent component
+    const { mutateAsync } = useClientSelfie();
+
+    // Expose the takePhoto and submit functions to the parent component
     useImperativeHandle(ref, () => ({
       takePhoto,
+      submit: async () => {
+        if (!selfieUri) {
+          Alert.alert('Validation Error', 'Please capture a selfie.');
+          return false;
+        }
+        try {
+          await mutateAsync(selfieUri);
+          return true;
+        } catch (error) {
+          console.error('Error uploading selfie:', error);
+          return false;
+        }
+      },
     }));
 
     const handleClearPhoto = () => {
@@ -104,7 +121,7 @@ const SelfieScreen = forwardRef<SelfieScreenRef, SelfieScreenProps>(
               <View className="relative h-full w-full">
                 <Image
                   source={{ uri: selfieUri }}
-                  className="-rotate-270 h-full w-full"
+                  className="h-full w-full -scale-x-100"
                   resizeMode="cover"
                 />
                 {/* Floating Retake Button over the photo */}
@@ -173,10 +190,10 @@ const SelfieScreen = forwardRef<SelfieScreenRef, SelfieScreenProps>(
 
 const styles = StyleSheet.create({
   ovalContainer: {
-    width: 230,
+    width: 260,
     height: 320,
-    borderRadius: 115, // Half of width to make it a perfect ellipse/oval
-    borderWidth: 3,
+    borderRadius: 120, // Half of width to make it a perfect ellipse/oval
+    borderWidth: 0,
     borderColor: '#F6163C', // Accent color for scanning look
     borderStyle: 'dashed',
     overflow: 'hidden',
@@ -194,9 +211,9 @@ const styles = StyleSheet.create({
     width: '90%',
     height: '92%',
     borderRadius: 100,
+    borderStyle: 'dashed',
     borderWidth: 1.5,
     borderColor: 'rgba(255, 255, 255, 0.4)',
-    borderStyle: 'solid',
   },
 });
 

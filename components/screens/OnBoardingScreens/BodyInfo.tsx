@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, forwardRef, useImperativeHandle } from 'react';
 import {
   View,
   Text,
@@ -8,23 +8,117 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
   Platform,
+  Alert,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { useClientBodyInfo } from '@/hook/useClient';
 
 const { width } = Dimensions.get('window');
 const TICK_SPACING = 15;
 
-const BodyInfo = () => {
-  const [date, setDate] = useState(new Date(2000, 0, 1));
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [dobText, setDobText] = useState('DD/MM/YYYY');
+export interface BodyInfoRef {
+  submit: () => Promise<boolean>;
+}
 
-  const [weight, setWeight] = useState<number>(70);
-  const [height, setHeight] = useState<number>(170);
-  const [weightUnit, setWeightUnit] = useState<'kg' | 'lb'>('kg');
-  const [heightUnit, setHeightUnit] = useState<'cm' | 'inches'>('cm');
+interface BodyInfoProps {
+  prefill?: any;
+}
+
+const BodyInfo = forwardRef<BodyInfoRef, BodyInfoProps>(({ prefill }, ref) => {
+  const { mutateAsync } = useClientBodyInfo();
+
+  // Parsing DOB helpers
+  const getInitialDob = () => {
+    if (prefill?.date_of_birth) {
+      const parts = prefill.date_of_birth.split('-');
+      if (parts.length === 3) {
+        // YYYY-MM-DD
+        return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      }
+      return new Date(prefill.date_of_birth);
+    }
+    return new Date(2000, 0, 1);
+  };
+
+  const getInitialDobText = () => {
+    if (prefill?.date_of_birth) {
+      const parts = prefill.date_of_birth.split('-');
+      if (parts.length === 3) {
+        // YYYY-MM-DD -> DD/MM/YYYY
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+      return prefill.date_of_birth;
+    }
+    return 'DD/MM/YYYY';
+  };
+
+  // Parsing Weight helpers
+  const getInitialWeight = () => {
+    if (prefill?.weight) {
+      const parts = prefill.weight.split(' ');
+      const val = parseInt(parts[0]);
+      if (!isNaN(val)) return val;
+    }
+    return 70;
+  };
+
+  const getInitialWeightUnit = () => {
+    if (prefill?.weight) {
+      const parts = prefill.weight.split(' ');
+      if (parts[1] === 'lb') return 'lb';
+    }
+    return 'kg';
+  };
+
+  // Parsing Height helpers
+  const getInitialHeight = () => {
+    if (prefill?.height) {
+      const parts = prefill.height.split(' ');
+      const val = parseInt(parts[0]);
+      if (!isNaN(val)) return val;
+    }
+    return 170;
+  };
+
+  const getInitialHeightUnit = () => {
+    if (prefill?.height) {
+      const parts = prefill.height.split(' ');
+      if (parts[1] === 'inches') return 'inches';
+    }
+    return 'cm';
+  };
+
+  const [date, setDate] = useState(getInitialDob());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [dobText, setDobText] = useState(getInitialDobText());
+
+  const [weight, setWeight] = useState<number>(getInitialWeight());
+  const [height, setHeight] = useState<number>(getInitialHeight());
+  const [weightUnit, setWeightUnit] = useState<'kg' | 'lb'>(getInitialWeightUnit());
+  const [heightUnit, setHeightUnit] = useState<'cm' | 'inches'>(getInitialHeightUnit());
+
+  useImperativeHandle(ref, () => ({
+    submit: async () => {
+      if (dobText === 'DD/MM/YYYY') {
+        Alert.alert('Validation Error', 'Please select your Date of Birth.');
+        return false;
+      }
+      try {
+        const dobFormatted = date.toISOString().split('T')[0];
+        await mutateAsync({
+          height: `${height} ${heightUnit}`,
+          weight: `${weight} ${weightUnit}`,
+          date_of_birth: dobFormatted,
+        });
+        return true;
+      } catch (error) {
+        console.error('Error submitting body info:', error);
+        return false;
+      }
+    },
+  }));
 
   const weights = Array.from({ length: 251 }, (_, i) => i + 20);
   const heights = Array.from({ length: 201 }, (_, i) => i + 50);
@@ -237,6 +331,8 @@ const BodyInfo = () => {
       </View>
     </View>
   );
-};
+});
+
+BodyInfo.displayName = 'BodyInfo';
 
 export default BodyInfo;

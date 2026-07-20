@@ -19,6 +19,7 @@ export const ENDPOINTS = {
   SELFIE: `${BASE_URL}/api/pending-client/selfie`,
   GOVERNMENT_ID: `${BASE_URL}/api/pending-client/government-id`,
   VERIFY_PENDING_CLIENT: `${BASE_URL}/api/pending-client/verify`,
+  CHECK_STEP: `${BASE_URL}/api/pending-client/me`,
 
   // Dashboard
 };

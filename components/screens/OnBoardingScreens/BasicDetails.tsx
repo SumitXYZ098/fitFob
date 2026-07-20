@@ -1,16 +1,121 @@
+import { useAuthStore } from '@/store/useAuthStore';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
-import { TextInput, TouchableOpacity, Image, Text, View } from 'react-native';
-// Nayi library import karein
+import { useState, forwardRef, useImperativeHandle } from 'react';
+import { TextInput, TouchableOpacity, Image, Text, View, Alert } from 'react-native';
 import CountryPicker, { CountryCode, Country } from 'react-native-country-picker-modal';
+import { useClientBasicDetails } from '@/hook/useClient';
 
-const BasicDetails = () => {
-  const [selectedGender, setSelectedGender] = useState('male');
+const getMaxPhoneLength = (code: string): number => {
+  const lengths: Record<string, number> = {
+    IN: 10, // India
+    US: 10, // USA
+    CA: 10, // Canada
+    GB: 10, // UK
+    AU: 9, // Australia
+    NZ: 9, // New Zealand
+    SG: 8, // Singapore
+    AE: 9, // UAE
+    DE: 11, // Germany
+    FR: 9, // France
+    PK: 10, // Pakistan
+    BD: 10, // Bangladesh
+    NP: 10, // Nepal
+    LK: 9, // Sri Lanka
+  };
+  return lengths[code] || 15; // Default E.164 max length
+};
 
-  // Phone aur Country state
-  const [countryCode, setCountryCode] = useState<CountryCode>('IN'); // Default India
-  const [callingCode, setCallingCode] = useState('91');
-  const [phoneNumber, setPhoneNumber] = useState('');
+export interface BasicDetailsRef {
+  submit: () => Promise<boolean>;
+}
+
+interface BasicDetailsProps {
+  prefill?: any;
+}
+
+const BasicDetails = forwardRef<BasicDetailsRef, BasicDetailsProps>(({ prefill }, ref) => {
+  const { user } = useAuthStore();
+  const { mutateAsync } = useClientBasicDetails();
+
+  const parsePhone = (fullPhone: string) => {
+    if (!fullPhone || !fullPhone.startsWith('+')) {
+      return { callingCode: '91', countryCode: 'IN' as CountryCode, number: fullPhone || '' };
+    }
+    const countryCallingMap: { prefix: string; cca2: CountryCode }[] = [
+      { prefix: '91', cca2: 'IN' },
+      { prefix: '1', cca2: 'US' },
+      { prefix: '44', cca2: 'GB' },
+      { prefix: '61', cca2: 'AU' },
+      { prefix: '64', cca2: 'NZ' },
+      { prefix: '65', cca2: 'SG' },
+      { prefix: '971', cca2: 'AE' },
+      { prefix: '49', cca2: 'DE' },
+      { prefix: '33', cca2: 'FR' },
+      { prefix: '92', cca2: 'PK' },
+      { prefix: '880', cca2: 'BD' },
+      { prefix: '977', cca2: 'NP' },
+      { prefix: '94', cca2: 'LK' },
+    ];
+    const raw = fullPhone.slice(1);
+    for (const item of countryCallingMap) {
+      if (raw.startsWith(item.prefix)) {
+        return {
+          callingCode: item.prefix,
+          countryCode: item.cca2,
+          number: raw.slice(item.prefix.length),
+        };
+      }
+    }
+    return { callingCode: '91', countryCode: 'IN' as CountryCode, number: raw };
+  };
+
+  const initialPhone = prefill?.phoneNumber ? parsePhone(prefill.phoneNumber) : null;
+
+  const [name, setName] = useState(prefill?.name || '');
+  const [email, setEmail] = useState(prefill?.email || user?.email || '');
+  const [selectedGender, setSelectedGender] = useState(prefill?.gender || 'male');
+  const [countryCode, setCountryCode] = useState<CountryCode>(initialPhone?.countryCode || 'IN');
+  const [callingCode, setCallingCode] = useState(initialPhone?.callingCode || '91');
+  const [phoneNumber, setPhoneNumber] = useState(initialPhone?.number || '');
+
+  useImperativeHandle(ref, () => ({
+    submit: async () => {
+      if (!name.trim()) {
+        Alert.alert('Validation Error', 'Please enter your name.');
+        return false;
+      }
+      if (!phoneNumber.trim()) {
+        Alert.alert('Validation Error', 'Please enter your phone number.');
+        return false;
+      }
+      const requiredLength = getMaxPhoneLength(countryCode);
+      const currentLength = phoneNumber.replace(/\D/g, '').length;
+      if (requiredLength !== 15 && currentLength !== requiredLength) {
+        Alert.alert(
+          'Validation Error',
+          `Phone number must be exactly ${requiredLength} digits for ${countryCode}.`
+        );
+        return false;
+      }
+      if (requiredLength === 15 && (currentLength < 8 || currentLength > 15)) {
+        Alert.alert('Validation Error', 'Please enter a valid phone number (8-15 digits).');
+        return false;
+      }
+      try {
+        const fullPhone = `+${callingCode}${phoneNumber}`;
+        await mutateAsync({
+          name,
+          email,
+          phoneNumber: fullPhone,
+          gender: selectedGender,
+        });
+        return true;
+      } catch (error) {
+        console.error('Error submitting basic details:', error);
+        return false;
+      }
+    },
+  }));
 
   const genders = [
     {
@@ -39,6 +144,8 @@ const BasicDetails = () => {
         <TextInput
           placeholder="Enter Name"
           placeholderTextColor="#94a3b8"
+          value={name}
+          onChangeText={setName}
           className="h-16 rounded-2xl border border-slate-200 bg-white px-5"
         />
       </View>
@@ -49,6 +156,8 @@ const BasicDetails = () => {
         <TextInput
           placeholder="Enter Email"
           placeholderTextColor="#94a3b8"
+          value={email}
+          onChangeText={setEmail}
           className="h-16 rounded-2xl border border-slate-100 bg-white px-5"
         />
       </View>
@@ -68,6 +177,7 @@ const BasicDetails = () => {
               onSelect={(country: Country) => {
                 setCountryCode(country.cca2);
                 setCallingCode(country.callingCode[0]);
+                setPhoneNumber(''); // Clear phone number when country changes to avoid mismatched length
               }}
             />
             {/* Down Arrow Icon */}
@@ -86,7 +196,8 @@ const BasicDetails = () => {
             placeholderTextColor="#94a3b8"
             keyboardType="phone-pad"
             value={phoneNumber}
-            onChangeText={setPhoneNumber}
+            onChangeText={(text) => setPhoneNumber(text.replace(/\D/g, ''))}
+            maxLength={getMaxPhoneLength(countryCode)}
             className="h-full flex-1 text-slate-900"
           />
         </View>
@@ -140,6 +251,8 @@ const BasicDetails = () => {
       </View>
     </View>
   );
-};
+});
+
+BasicDetails.displayName = 'BasicDetails';
 
 export default BasicDetails;

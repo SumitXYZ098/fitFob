@@ -2,6 +2,7 @@ import React, { useImperativeHandle, forwardRef } from 'react';
 import { View, Text, Image, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { useClientGovId } from '@/hook/useClient';
 
 interface GovernmentIdProps {
   govIdUri: string | null;
@@ -10,38 +11,37 @@ interface GovernmentIdProps {
 
 export interface GovernmentIdRef {
   uploadId: () => Promise<void>;
+  submit: () => Promise<boolean>;
 }
 
 const GovernmentId = forwardRef<GovernmentIdRef, GovernmentIdProps>(
   ({ govIdUri, setGovIdUri }, ref) => {
-
     const uploadId = async () => {
       // Show choices: Camera or Gallery
-      Alert.alert(
-        'Upload Government ID',
-        'Choose a source to upload your ID card:',
-        [
-          {
-            text: 'Take Photo (Camera)',
-            onPress: handleLaunchCamera,
-          },
-          {
-            text: 'Choose from Gallery',
-            onPress: handleLaunchLibrary,
-          },
-          {
-            text: 'Cancel',
-            style: 'cancel',
-          },
-        ]
-      );
+      Alert.alert('Upload Government ID', 'Choose a source to upload your ID card:', [
+        {
+          text: 'Take Photo (Camera)',
+          onPress: handleLaunchCamera,
+        },
+        {
+          text: 'Choose from Gallery',
+          onPress: handleLaunchLibrary,
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ]);
     };
 
     const handleLaunchCamera = async () => {
       try {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
         if (status !== 'granted') {
-          Alert.alert('Permission Denied', 'Camera permission is required to snap a picture of your ID.');
+          Alert.alert(
+            'Permission Denied',
+            'Camera permission is required to snap a picture of your ID.'
+          );
           return;
         }
 
@@ -82,58 +82,73 @@ const GovernmentId = forwardRef<GovernmentIdRef, GovernmentIdProps>(
       }
     };
 
-    // Expose uploadId function to parent
+    const { mutateAsync } = useClientGovId();
+
+    // Expose uploadId and submit functions to parent
     useImperativeHandle(ref, () => ({
       uploadId,
+      submit: async () => {
+        if (!govIdUri) {
+          Alert.alert('Validation Error', 'Please upload a government ID.');
+          return false;
+        }
+        try {
+          await mutateAsync(govIdUri);
+          return true;
+        } catch (error) {
+          console.error('Error uploading government ID:', error);
+          return false;
+        }
+      },
     }));
 
     return (
       <View className="flex-1 items-center bg-white px-6">
         {/* Header Section */}
-        <View className="items-center mt-6 mb-8">
-          <Text className="font-bold text-3xl text-slate-900 text-center">Government ID</Text>
+        <View className="mb-8 mt-6 items-center">
+          <Text className="text-center font-bold text-3xl text-slate-900">Government ID</Text>
           <Text className="mt-2 text-center text-sm text-slate-400">
             Please upload a photo of your government ID.
           </Text>
         </View>
 
         {/* ID Rectangular Frame Section */}
-        <View className="flex-1 justify-center items-center my-6">
+        <View className="my-6 flex-1 items-center justify-center">
           <View style={styles.cardContainer}>
             {govIdUri ? (
-              <View className="relative w-full h-full">
-                <Image
-                  source={{ uri: govIdUri }}
-                  className="w-full h-full"
-                  resizeMode="cover"
-                />
+              <View className="relative h-full w-full">
+                <Image source={{ uri: govIdUri }} className="h-full w-full" resizeMode="cover" />
                 {/* Floating Clear/Trash Button */}
                 <TouchableOpacity
                   onPress={() => setGovIdUri(null)}
-                  className="absolute bottom-3 right-3 bg-slate-900/80 p-3 rounded-full items-center justify-center"
-                  style={{ elevation: 5, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 3, shadowOffset: { width: 0, height: 1 } }}
-                  activeOpacity={0.8}
-                >
+                  className="absolute bottom-3 right-3 items-center justify-center rounded-full bg-slate-900/80 p-3"
+                  style={{
+                    elevation: 5,
+                    shadowColor: '#000',
+                    shadowOpacity: 0.2,
+                    shadowRadius: 3,
+                    shadowOffset: { width: 0, height: 1 },
+                  }}
+                  activeOpacity={0.8}>
                   <Ionicons name="trash-outline" size={18} color="white" />
                 </TouchableOpacity>
               </View>
             ) : (
               <TouchableOpacity
                 onPress={uploadId}
-                className="w-full h-full items-center justify-center bg-slate-50"
-                activeOpacity={0.7}
-              >
+                className="h-full w-full items-center justify-center bg-slate-50"
+                activeOpacity={0.7}>
                 <Ionicons name="card-outline" size={44} color="#94a3b8" />
-                <Text className="mt-3 text-xs font-semibold text-slate-400">Tap to Upload ID</Text>
+                <Text className="mt-3 font-semibold text-xs text-slate-400">Tap to Upload ID</Text>
               </TouchableOpacity>
             )}
           </View>
         </View>
 
         {/* Tip / Guidelines Section */}
-        <View className="items-center mb-10 mt-6 px-4">
-          <Text className="text-center text-slate-400 text-sm leading-relaxed">
-            Tip: Make Sure all details on your ID are visible{"\n"}and clear
+        <View className="mb-10 mt-6 items-center px-4">
+          <Text className="text-center text-sm leading-relaxed text-slate-400">
+            Tip: Make Sure all details on your ID are visible{'\n'}and clear
           </Text>
         </View>
       </View>

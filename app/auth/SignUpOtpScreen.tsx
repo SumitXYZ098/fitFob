@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Button } from '@/components/Button';
-import { Container } from '@/components/Container';
+import { Button } from '@/components/modules/Button';
+import { Container } from '@/components/modules/Container';
 import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
 
 import Toast from 'react-native-toast-message';

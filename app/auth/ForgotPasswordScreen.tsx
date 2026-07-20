@@ -4,8 +4,8 @@ import { useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button } from '@/components/Button';
-import { Container } from '@/components/Container';
+import { Button } from '@/components/modules/Button';
+import { Container } from '@/components/modules/Container';
 import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
 import { useForgotSendOtp } from '@/hook/useAuth';
 
