@@ -24,13 +24,6 @@ export default function Congratulations() {
         </TouchableOpacity>
 
         <View className="-mt-12 flex-1 items-center justify-center">
-          {/* Celebrating popper GIF */}
-          <Image
-            source={{ uri: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f389/512.gif' }}
-            style={{ width: 120, height: 120, marginBottom: -10 }}
-            resizeMode="contain"
-          />
-
           {/* Title Area */}
           <Text className="mb-2 text-center font-bold text-[34px] leading-tight text-slate-900">
             Congratulations
@@ -39,10 +32,12 @@ export default function Congratulations() {
             You have successfully completed the process
           </Text>
 
-          {/* Red Circle with Checkmark */}
-          <View className="h-44 w-44 items-center justify-center rounded-full bg-[#F6163C]">
-            <Ionicons name="checkmark" size={90} color="white" />
-          </View>
+          {/* Celebrating popper GIF */}
+          <Image
+            source={require('../../assets/gif/congrat.gif')}
+            style={{ width: 150, height: 150, marginBottom: 20 }}
+            resizeMode="contain"
+          />
         </View>
 
         {/* Finish Button */}

@@ -4,14 +4,13 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Platform,
   StyleSheet,
   Alert,
   ActivityIndicator,
   ScrollView,
   Keyboard,
 } from 'react-native';
-import MapView, { Marker, UrlTile, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useClientLocation } from '@/hook/useClient';
@@ -64,6 +63,16 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
   const getCurrentLocation = async () => {
     setLoading(true);
     try {
+      const servicesEnabled = await Location.hasServicesEnabledAsync();
+      if (!servicesEnabled) {
+        Alert.alert(
+          'Location Services Disabled',
+          'Please enable location services in your device settings.'
+        );
+        setLoading(false);
+        return;
+      }
+
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permission Denied', 'Please allow location access.');
@@ -71,24 +80,40 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
         return;
       }
 
-      let userLocation = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
+      let userLocation = await Location.getLastKnownPositionAsync();
 
-      const newCoords = {
-        latitude: userLocation.coords.latitude,
-        longitude: userLocation.coords.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      };
+      if (!userLocation) {
+        const positionPromise = Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        const timeoutPromise = new Promise<null>((_, reject) =>
+          setTimeout(() => reject(new Error('Location request timed out')), 10000)
+        );
+        userLocation = await Promise.race([positionPromise, timeoutPromise]);
+      }
 
-      setLocation(newCoords);
-      mapRef.current?.animateToRegion(newCoords, 1000);
+      if (userLocation) {
+        const newCoords = {
+          latitude: userLocation.coords.latitude,
+          longitude: userLocation.coords.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        };
 
-      // Get readable address name
-      reverseGeocode(newCoords.latitude, newCoords.longitude);
+        setLocation(newCoords);
+        mapRef.current?.animateToRegion(newCoords, 1000);
+
+        // Get readable address name
+        reverseGeocode(newCoords.latitude, newCoords.longitude);
+      } else {
+        throw new Error('Could not retrieve location.');
+      }
     } catch (error) {
-      console.log(error);
+      console.log('Error getting current location:', error);
+      Alert.alert(
+        'Location Error',
+        'Could not retrieve your location. Please check your GPS/network signal or search manually.'
+      );
     } finally {
       setLoading(false);
     }
@@ -204,13 +229,16 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
           provider={PROVIDER_GOOGLE}
           style={StyleSheet.absoluteFillObject}
           initialRegion={location}
-          mapType={Platform.OS === 'android' ? 'none' : 'standard'}>
-          <UrlTile
-            urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-            maximumZ={19}
-            tileSize={256}
-          />
-
+          onPress={(e) => {
+            const newCoords = e.nativeEvent.coordinate;
+            const updatedRegion = {
+              ...location,
+              latitude: newCoords.latitude,
+              longitude: newCoords.longitude,
+            };
+            setLocation(updatedRegion);
+            reverseGeocode(newCoords.latitude, newCoords.longitude);
+          }}>
           <Marker
             draggable
             coordinate={{
@@ -228,8 +256,7 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
               reverseGeocode(newCoords.latitude, newCoords.longitude);
             }}>
             <View className="items-center justify-center">
-              <Ionicons name="location" size={50} color="#F6163C" />
-              <View className="absolute bottom-1 h-3 w-3 rounded-full border-2 border-white bg-red-600 shadow-sm" />
+              <Ionicons name="location" size={40} color="#F6163C" />
             </View>
           </Marker>
         </MapView>

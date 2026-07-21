@@ -7,11 +7,21 @@ import {
   Alert,
   StyleSheet,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Camera, CameraView } from 'expo-camera';
 import { manipulateAsync, FlipType, SaveFormat } from 'expo-image-manipulator';
 import { useClientSelfie } from '@/hook/useClient';
+
+// Safely import MLKit Face Detector to prevent crashing in Expo Go/Simulators without native module
+let RNMLKitFaceDetector: any = null;
+try {
+  const mlkit = require('@infinitered/react-native-mlkit-face-detection');
+  RNMLKitFaceDetector = mlkit.RNMLKitFaceDetector;
+} catch (error) {
+  console.warn('MLKit Face Detection native module is missing. Bypassing face validation check.');
+}
 
 interface SelfieScreenProps {
   selfieUri: string | null;
@@ -28,6 +38,37 @@ const SelfieScreen = forwardRef<SelfieScreenRef, SelfieScreenProps>(
     const cameraRef = useRef<any>(null);
     const [hasPermission, setHasPermission] = useState<boolean | null>(null);
     const [isCameraActive, setIsCameraActive] = useState(true);
+    const scanAnim = useRef(new Animated.Value(0)).current;
+
+    const faceDetectorRef = useRef<any>(null);
+    if (!faceDetectorRef.current && RNMLKitFaceDetector) {
+      try {
+        faceDetectorRef.current = new RNMLKitFaceDetector();
+      } catch (err) {
+        console.warn('Failed to initialize RNMLKitFaceDetector:', err);
+      }
+    }
+
+    useEffect(() => {
+      if (isCameraActive && !selfieUri) {
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(scanAnim, {
+              toValue: 1,
+              duration: 2000,
+              useNativeDriver: true,
+            }),
+            Animated.timing(scanAnim, {
+              toValue: 0,
+              duration: 2000,
+              useNativeDriver: true,
+            }),
+          ])
+        ).start();
+      } else {
+        scanAnim.setValue(0);
+      }
+    }, [isCameraActive, selfieUri]);
 
     useEffect(() => {
       (async () => {
@@ -65,6 +106,49 @@ const SelfieScreen = forwardRef<SelfieScreenRef, SelfieScreenProps>(
               compress: 0.85,
               format: SaveFormat.JPEG,
             });
+
+            // Perform on-device face detection if the native module is available
+            const faceDetector = faceDetectorRef.current;
+            if (faceDetector) {
+              try {
+                const detection = await faceDetector.detectFaces(manipResult.uri);
+
+                if (!detection || !detection.faces || detection.faces.length === 0) {
+                  Alert.alert(
+                    'Face Detection Failed',
+                    'No face detected. Please ensure your face is fully visible inside the frame and has good lighting.'
+                  );
+                  return;
+                }
+
+                if (detection.faces.length > 1) {
+                  Alert.alert(
+                    'Face Detection Failed',
+                    'Multiple faces detected. Please make sure only one face is visible in the frame.'
+                  );
+                  return;
+                }
+
+                const face = detection.faces[0];
+
+                // Check if head is turned to the side (Euler Y/Yaw rotation)
+                if (face.hasHeadEulerAngleY && face.headEulerAngleY !== undefined && face.headEulerAngleY !== null) {
+                  const yaw = face.headEulerAngleY;
+                  // An angle absolute value greater than 18 degrees represents a side face profile
+                  if (Math.abs(yaw) > 18) {
+                    Alert.alert(
+                      'Face Detection Failed',
+                      'Please look straight at the camera. Side profile or turned face poses are not accepted.'
+                    );
+                    return;
+                  }
+                }
+              } catch (detError) {
+                console.warn('Face detection execution failed, bypassing check:', detError);
+              }
+            } else {
+              console.warn('MLKit Face Detection is not active. Bypassing face check.');
+            }
 
             setSelfieUri(manipResult.uri);
             setIsCameraActive(false);
@@ -116,7 +200,11 @@ const SelfieScreen = forwardRef<SelfieScreenRef, SelfieScreenProps>(
 
         {/* Selfie Frame Section with Live Camera Feed */}
         <View className="my-4 flex-1 items-center justify-center">
-          <View style={styles.ovalContainer}>
+          <View
+            style={[
+              styles.ovalContainer,
+              selfieUri ? { borderWidth: 4, borderColor: '#10B981', borderStyle: 'solid' } : null,
+            ]}>
             {selfieUri ? (
               <View className="relative h-full w-full">
                 <Image
@@ -124,20 +212,6 @@ const SelfieScreen = forwardRef<SelfieScreenRef, SelfieScreenProps>(
                   className="h-full w-full -scale-x-100"
                   resizeMode="cover"
                 />
-                {/* Floating Retake Button over the photo */}
-                <TouchableOpacity
-                  onPress={handleClearPhoto}
-                  className="absolute bottom-4 right-4 items-center justify-center rounded-full bg-slate-900/80 p-3"
-                  style={{
-                    elevation: 5,
-                    shadowColor: '#000',
-                    shadowOpacity: 0.2,
-                    shadowRadius: 3,
-                    shadowOffset: { width: 0, height: 1 },
-                  }}
-                  activeOpacity={0.8}>
-                  <Ionicons name="refresh-outline" size={20} color="white" />
-                </TouchableOpacity>
               </View>
             ) : hasPermission === null ? (
               <View className="items-center justify-center p-4">
@@ -171,18 +245,56 @@ const SelfieScreen = forwardRef<SelfieScreenRef, SelfieScreenProps>(
                 {/* Visual feedback/scanning guidelines overlay */}
                 <View style={styles.scannerOverlay} pointerEvents="none">
                   <View style={styles.scanTargetRing} />
+                  <Animated.View
+                    style={[
+                      styles.scanLine,
+                      {
+                        transform: [
+                          {
+                            translateY: scanAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [-140, 140],
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                  />
                 </View>
               </View>
             )}
           </View>
         </View>
 
-        {/* Tip / Guidelines Section */}
-        <View className="mb-8 mt-4 items-center px-4">
-          <Text className="text-center text-sm leading-relaxed text-slate-400">
-            Tip: Keep your face clear, look straight at the camera and ensure good lighting.
-          </Text>
-        </View>
+        {/* Tip / Action / Guidelines Section */}
+        {selfieUri ? (
+          <View className="mb-8 mt-4 items-center w-full px-4">
+            <View className="flex-row items-center justify-center mb-4 bg-emerald-50 border border-emerald-100 rounded-2xl px-5 py-3 w-full">
+              <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+              <Text className="ml-2 font-semibold text-sm text-emerald-800">Face scan captured successfully</Text>
+            </View>
+            <TouchableOpacity
+              onPress={handleClearPhoto}
+              className="flex-row items-center justify-center border border-slate-200 rounded-2xl bg-white px-6 py-3.5 w-full active:bg-slate-50"
+              style={{
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.05,
+                shadowRadius: 2,
+                elevation: 1,
+              }}
+              activeOpacity={0.8}>
+              <Ionicons name="camera-reverse-outline" size={20} color="#64748B" />
+              <Text className="ml-2 font-bold text-sm text-slate-600">Retake Photo</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View className="mb-8 mt-4 items-center px-4">
+            <Text className="text-center text-sm leading-relaxed text-slate-400">
+              Tip: Keep your face clear, look straight at the camera and ensure good lighting.
+            </Text>
+          </View>
+        )}
       </View>
     );
   }
@@ -192,28 +304,44 @@ const styles = StyleSheet.create({
   ovalContainer: {
     width: 260,
     height: 320,
-    borderRadius: 120, // Half of width to make it a perfect ellipse/oval
-    borderWidth: 0,
+    borderRadius: 130, // Half of width to make it a perfect ellipse/oval
+    borderWidth: 2.5,
     borderColor: '#F6163C', // Accent color for scanning look
-    borderStyle: 'dashed',
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f8fafc',
+    shadowColor: '#F6163C',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 15,
+    elevation: 8,
   },
   scannerOverlay: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(246, 22, 60, 0.03)', // Subtle red tint
+    backgroundColor: 'rgba(246, 22, 60, 0.02)', // Subtle red tint
   },
   scanTargetRing: {
     width: '90%',
     height: '92%',
-    borderRadius: 100,
+    borderRadius: 120,
     borderStyle: 'dashed',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+    borderWidth: 2,
+    borderColor: 'rgba(246, 22, 60, 0.5)', // Distinct guide color
+  },
+  scanLine: {
+    position: 'absolute',
+    width: '100%',
+    height: 2.5,
+    backgroundColor: '#F6163C',
+    opacity: 0.8,
+    shadowColor: '#F6163C',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
+    elevation: 4,
   },
 });
 

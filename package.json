@@ -18,6 +18,7 @@
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
     "@hookform/resolvers": "^5.2.2",
+    "@infinitered/react-native-mlkit-face-detection": "^5.0.0",
     "@pietile-native-kit/keyboard-aware-scrollview": "^1.5.0",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-clipboard/clipboard": "^1.16.3",
