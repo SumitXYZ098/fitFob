@@ -29,7 +29,7 @@ function NavigationGuard({ children }: { children: React.ReactNode }) {
 
     if (!user) {
       if (!inAuthGroup) {
-        router.replace('/onBoardingScreen/Congratulations');
+        router.replace('/(tabs)/scan');
       }
     } else {
       if (inAuthGroup) {
@@ -53,6 +53,8 @@ export default function Layout() {
     'PlusJakartaSans-Medium': require('../assets/fonts/PlusJakartaSans-Medium.ttf'),
     'PlusJakartaSans-SemiBold': require('../assets/fonts/PlusJakartaSans-SemiBold.ttf'),
     'PlusJakartaSans-Bold': require('../assets/fonts/PlusJakartaSans-Bold.ttf'),
+    'Helvetica-Regular': require('../assets/fonts/HelveticaforTarget.ttf'),
+    'Helvetica-Bold': require('../assets/fonts/HelveticaforTarget-Bold.ttf'),
   });
 
   useEffect(() => {

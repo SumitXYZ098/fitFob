@@ -21,7 +21,19 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/PlusJakartaSans-Regular.ttf",
+            "./assets/fonts/PlusJakartaSans-Medium.ttf",
+            "./assets/fonts/PlusJakartaSans-SemiBold.ttf",
+            "./assets/fonts/PlusJakartaSans-Bold.ttf",
+            "./assets/fonts/HelveticaforTarget.ttf",
+            "./assets/fonts/HelveticaforTarget-Bold.ttf"
+          ]
+        }
+      ],
       "@react-native-community/datetimepicker",
       [
         "@react-native-google-signin/google-signin",

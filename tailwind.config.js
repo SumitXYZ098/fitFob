@@ -18,6 +18,8 @@ module.exports = {
         medium: ['PlusJakartaSans-Medium'],
         semibold: ['PlusJakartaSans-SemiBold'],
         bold: ['PlusJakartaSans-Bold'],
+        helvetica: ['Helvetica-Regular'],
+        boldHelvetica: ['Helvetica-Bold'],
       },
       fontSize: {
         base: '16px',

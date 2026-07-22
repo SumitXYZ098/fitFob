@@ -132,7 +132,11 @@ const SelfieScreen = forwardRef<SelfieScreenRef, SelfieScreenProps>(
                 const face = detection.faces[0];
 
                 // Check if head is turned to the side (Euler Y/Yaw rotation)
-                if (face.hasHeadEulerAngleY && face.headEulerAngleY !== undefined && face.headEulerAngleY !== null) {
+                if (
+                  face.hasHeadEulerAngleY &&
+                  face.headEulerAngleY !== undefined &&
+                  face.headEulerAngleY !== null
+                ) {
                   const yaw = face.headEulerAngleY;
                   // An angle absolute value greater than 18 degrees represents a side face profile
                   if (Math.abs(yaw) > 18) {
@@ -268,14 +272,16 @@ const SelfieScreen = forwardRef<SelfieScreenRef, SelfieScreenProps>(
 
         {/* Tip / Action / Guidelines Section */}
         {selfieUri ? (
-          <View className="mb-8 mt-4 items-center w-full px-4">
-            <View className="flex-row items-center justify-center mb-4 bg-emerald-50 border border-emerald-100 rounded-2xl px-5 py-3 w-full">
+          <View className="mb-8 mt-4 w-full items-center px-4">
+            <View className="mb-4 w-full flex-row items-center justify-center rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-3">
               <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-              <Text className="ml-2 font-semibold text-sm text-emerald-800">Face scan captured successfully</Text>
+              <Text className="ml-2 font-semibold text-sm text-emerald-800">
+                Face scan captured successfully
+              </Text>
             </View>
             <TouchableOpacity
               onPress={handleClearPhoto}
-              className="flex-row items-center justify-center border border-slate-200 rounded-2xl bg-white px-6 py-3.5 w-full active:bg-slate-50"
+              className="w-full flex-row items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-3.5 active:bg-slate-50"
               style={{
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 1 },
