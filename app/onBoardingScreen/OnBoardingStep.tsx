@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { View, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Button } from '@/components/modules/Button';
 import { Container } from '@/components/modules/Container';
@@ -14,7 +14,8 @@ import { useAuthStore } from '@/store/useAuthStore';
 
 export default function OnBoardingStep() {
   const router = useRouter();
-  const [step, setStep] = useState(1);
+  const { step: paramStep } = useLocalSearchParams<{ step?: string }>();
+  const [step, setStep] = useState(paramStep ? Number(paramStep) : 1);
   const [loading, setLoading] = useState(false);
   const [checkingStep, setCheckingStep] = useState(true);
 
@@ -61,7 +62,9 @@ export default function OnBoardingStep() {
               );
             }
           }
-          if (response.currentStep) {
+          if (paramStep) {
+            setStep(Number(paramStep));
+          } else if (response.currentStep) {
             setStep(response.currentStep);
           }
         }
@@ -73,7 +76,7 @@ export default function OnBoardingStep() {
     };
 
     checkProgress();
-  }, [router]);
+  }, [router, paramStep]);
 
   const handleNext = async () => {
     setLoading(true);

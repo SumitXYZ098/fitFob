@@ -10,7 +10,7 @@ import {
   ScrollView,
   Keyboard,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, UrlTile } from 'react-native-maps';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useClientLocation } from '@/hook/useClient';
@@ -226,9 +226,9 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
         <MapView
           className="rounded-lg"
           ref={mapRef}
-          provider={PROVIDER_GOOGLE}
           style={StyleSheet.absoluteFillObject}
           initialRegion={location}
+          mapType="none"
           onPress={(e) => {
             const newCoords = e.nativeEvent.coordinate;
             const updatedRegion = {
@@ -239,6 +239,11 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
             setLocation(updatedRegion);
             reverseGeocode(newCoords.latitude, newCoords.longitude);
           }}>
+          <UrlTile
+            urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            maximumZ={19}
+            flipY={false}
+          />
           <Marker
             draggable
             coordinate={{

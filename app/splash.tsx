@@ -46,7 +46,7 @@ export default function Splash() {
     });
 
     const t = setTimeout(() => {
-      router.replace('/welcome');
+      router.replace('/onBoardingScreen/Congratulations');
     }, 1500);
 
     return () => clearTimeout(t);

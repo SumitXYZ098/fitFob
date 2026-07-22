@@ -54,13 +54,11 @@ export default function UnderReview() {
     }
   };
 
-  const handleBack = async () => {
-    try {
-      await logOut();
-      router.replace('/welcome');
-    } catch (error) {
-      console.log('Error logging out:', error);
-    }
+  const handleBack = () => {
+    router.replace({
+      pathname: '/onBoardingScreen/OnBoardingStep',
+      params: { step: '5' },
+    });
   };
 
   return (

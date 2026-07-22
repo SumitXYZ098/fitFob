@@ -29,7 +29,7 @@ function NavigationGuard({ children }: { children: React.ReactNode }) {
 
     if (!user) {
       if (!inAuthGroup) {
-        router.replace('/welcome');
+        router.replace('/onBoardingScreen/Congratulations');
       }
     } else {
       if (inAuthGroup) {

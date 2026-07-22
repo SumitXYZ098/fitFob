@@ -69,6 +69,10 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you.",
+        "NSLocationWhenInUseUsageDescription": "We need access to your location to find gyms and classes near you.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "We need access to your location to find gyms and classes near you.",
+        "NSLocationUsageDescription": "We need access to your location to find gyms and classes near you.",
+        "NSLocationAlwaysUsageDescription": "We need access to your location to find gyms and classes near you.",
         "SKAdNetworkItems": [
           {
             "SKAdNetworkIdentifier": "v9wttpbfk9.skadnetwork"
