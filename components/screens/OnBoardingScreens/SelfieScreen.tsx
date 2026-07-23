@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import React, { useImperativeHandle, forwardRef, useRef, useState, useEffect } from 'react';
 import {
   View,
@@ -12,15 +13,28 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Camera, CameraView } from 'expo-camera';
 import { manipulateAsync, FlipType, SaveFormat } from 'expo-image-manipulator';
+import { requireNativeModule } from 'expo-modules-core';
 import { useClientSelfie } from '@/hook/useClient';
 
-// Safely import MLKit Face Detector to prevent crashing in Expo Go/Simulators without native module
-let RNMLKitFaceDetector: any = null;
+// Safely load MLKit Face Detection native module if available
+let isNativeModuleAvailable = false;
+let FaceDetectionProviderComp: any = null;
+let useFaceDetectionHook: any = null;
+
 try {
-  const mlkit = require('@infinitered/react-native-mlkit-face-detection');
-  RNMLKitFaceDetector = mlkit.RNMLKitFaceDetector;
-} catch (error) {
-  console.warn('MLKit Face Detection native module is missing. Bypassing face validation check.');
+  const nativeModule = requireNativeModule('RNMLKitFaceDetection');
+  if (nativeModule) {
+    const mlkit = require('@infinitered/react-native-mlkit-face-detection');
+    FaceDetectionProviderComp = mlkit.FaceDetectionProvider;
+    useFaceDetectionHook = mlkit.useFaceDetection;
+    isNativeModuleAvailable = true;
+    console.log('[Face Detection] Native module RNMLKitFaceDetection is LOADED successfully.');
+  }
+} catch {
+  isNativeModuleAvailable = false;
+  console.warn(
+    '[Face Detection] RNMLKitFaceDetection native module is missing (Expo Go environment). Face validation check will be bypassed.'
+  );
 }
 
 interface SelfieScreenProps {
@@ -33,19 +47,27 @@ export interface SelfieScreenRef {
   submit: () => Promise<boolean>;
 }
 
-const SelfieScreen = forwardRef<SelfieScreenRef, SelfieScreenProps>(
+const faceDetectorOptions = {
+  performanceMode: 'accurate',
+  landmarkMode: true,
+  classificationMode: true,
+  minFaceSize: 0.15,
+};
+
+const SelfieContent = forwardRef<SelfieScreenRef, SelfieScreenProps>(
   ({ selfieUri, setSelfieUri }, ref) => {
     const cameraRef = useRef<any>(null);
     const [hasPermission, setHasPermission] = useState<boolean | null>(null);
     const [isCameraActive, setIsCameraActive] = useState(true);
     const scanAnim = useRef(new Animated.Value(0)).current;
 
-    const faceDetectorRef = useRef<any>(null);
-    if (!faceDetectorRef.current && RNMLKitFaceDetector) {
+    // Retrieve face detector instance if native module is present
+    let faceDetector: any = null;
+    if (isNativeModuleAvailable && useFaceDetectionHook) {
       try {
-        faceDetectorRef.current = new RNMLKitFaceDetector();
-      } catch (err) {
-        console.warn('Failed to initialize RNMLKitFaceDetector:', err);
+        faceDetector = useFaceDetectionHook();
+      } catch {
+        faceDetector = null;
       }
     }
 
@@ -68,7 +90,7 @@ const SelfieScreen = forwardRef<SelfieScreenRef, SelfieScreenProps>(
       } else {
         scanAnim.setValue(0);
       }
-    }, [isCameraActive, selfieUri]);
+    }, [isCameraActive, selfieUri, scanAnim]);
 
     useEffect(() => {
       (async () => {
@@ -107,13 +129,15 @@ const SelfieScreen = forwardRef<SelfieScreenRef, SelfieScreenProps>(
               format: SaveFormat.JPEG,
             });
 
-            // Perform on-device face detection if the native module is available
-            const faceDetector = faceDetectorRef.current;
+            // Perform on-device face detection if MLKit native module is present
             if (faceDetector) {
               try {
+                console.log('[Face Detection] Running MLKit face detection on:', manipResult.uri);
                 const detection = await faceDetector.detectFaces(manipResult.uri);
+                console.log('[Face Detection] Raw Result:', JSON.stringify(detection, null, 2));
 
                 if (!detection || !detection.faces || detection.faces.length === 0) {
+                  console.log('[Face Detection] Failed: No faces detected.');
                   Alert.alert(
                     'Face Detection Failed',
                     'No face detected. Please ensure your face is fully visible inside the frame and has good lighting.'
@@ -122,6 +146,7 @@ const SelfieScreen = forwardRef<SelfieScreenRef, SelfieScreenProps>(
                 }
 
                 if (detection.faces.length > 1) {
+                  console.log(`[Face Detection] Failed: ${detection.faces.length} faces detected.`);
                   Alert.alert(
                     'Face Detection Failed',
                     'Multiple faces detected. Please make sure only one face is visible in the frame.'
@@ -130,16 +155,24 @@ const SelfieScreen = forwardRef<SelfieScreenRef, SelfieScreenProps>(
                 }
 
                 const face = detection.faces[0];
+                console.log('[Face Detection] Face Metrics:', {
+                  frame: face.frame,
+                  yawAngleY: face.headEulerAngleY,
+                  leftEyeOpenProb: face.leftEyeOpenProbability,
+                  rightEyeOpenProb: face.rightEyeOpenProbability,
+                  smilingProb: face.smilingProbability,
+                });
 
-                // Check if head is turned to the side (Euler Y/Yaw rotation)
+                // Check head rotation (Yaw angle)
                 if (
                   face.hasHeadEulerAngleY &&
                   face.headEulerAngleY !== undefined &&
                   face.headEulerAngleY !== null
                 ) {
                   const yaw = face.headEulerAngleY;
-                  // An angle absolute value greater than 18 degrees represents a side face profile
+                  console.log(`[Face Detection] Head Yaw Angle: ${yaw}°`);
                   if (Math.abs(yaw) > 18) {
+                    console.log(`[Face Detection] Failed: Head turned too much (${yaw}° > 18°)`);
                     Alert.alert(
                       'Face Detection Failed',
                       'Please look straight at the camera. Side profile or turned face poses are not accepted.'
@@ -147,11 +180,35 @@ const SelfieScreen = forwardRef<SelfieScreenRef, SelfieScreenProps>(
                     return;
                   }
                 }
+
+                // Check if eyes are open
+                if (
+                  face.hasLeftEyeOpenProbability &&
+                  face.leftEyeOpenProbability !== undefined &&
+                  face.leftEyeOpenProbability !== null &&
+                  face.hasRightEyeOpenProbability &&
+                  face.rightEyeOpenProbability !== undefined &&
+                  face.rightEyeOpenProbability !== null
+                ) {
+                  console.log(
+                    `[Face Detection] Eyes Open Probabilities -> Left: ${face.leftEyeOpenProbability}, Right: ${face.rightEyeOpenProbability}`
+                  );
+                  if (face.leftEyeOpenProbability < 0.3 || face.rightEyeOpenProbability < 0.3) {
+                    console.log('[Face Detection] Failed: Eyes closed or probability too low.');
+                    Alert.alert(
+                      'Face Detection Failed',
+                      'Please keep your eyes open clearly when taking the selfie.'
+                    );
+                    return;
+                  }
+                }
+
+                console.log('[Face Detection] Validation Passed Successfully!');
               } catch (detError) {
-                console.warn('Face detection execution failed, bypassing check:', detError);
+                console.warn('[Face Detection] Execution error, bypassing check:', detError);
               }
             } else {
-              console.warn('MLKit Face Detection is not active. Bypassing face check.');
+              console.warn('[Face Detection] Native detector not available. Bypassing face check.');
             }
 
             setSelfieUri(manipResult.uri);
@@ -169,7 +226,7 @@ const SelfieScreen = forwardRef<SelfieScreenRef, SelfieScreenProps>(
 
     const { mutateAsync } = useClientSelfie();
 
-    // Expose the takePhoto and submit functions to the parent component
+    // Expose takePhoto and submit functions to parent component
     useImperativeHandle(ref, () => ({
       takePhoto,
       submit: async () => {
@@ -306,6 +363,22 @@ const SelfieScreen = forwardRef<SelfieScreenRef, SelfieScreenProps>(
   }
 );
 
+SelfieContent.displayName = 'SelfieContent';
+
+const SelfieScreen = forwardRef<SelfieScreenRef, SelfieScreenProps>((props, ref) => {
+  if (isNativeModuleAvailable && FaceDetectionProviderComp) {
+    return (
+      <FaceDetectionProviderComp options={faceDetectorOptions}>
+        <SelfieContent {...props} ref={ref} />
+      </FaceDetectionProviderComp>
+    );
+  }
+
+  return <SelfieContent {...props} ref={ref} />;
+});
+
+SelfieScreen.displayName = 'SelfieScreen';
+
 const styles = StyleSheet.create({
   ovalContainer: {
     width: 260,
@@ -351,6 +424,5 @@ const styles = StyleSheet.create({
   },
 });
 
-SelfieScreen.displayName = 'SelfieScreen';
-
 export default SelfieScreen;
+

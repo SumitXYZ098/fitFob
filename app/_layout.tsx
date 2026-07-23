@@ -29,7 +29,7 @@ function NavigationGuard({ children }: { children: React.ReactNode }) {
 
     if (!user) {
       if (!inAuthGroup) {
-        router.replace('/(tabs)/scan');
+        router.replace('/welcome');
       }
     } else {
       if (inAuthGroup) {

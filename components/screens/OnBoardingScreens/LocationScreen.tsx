@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   ScrollView,
   Keyboard,
+  Platform,
 } from 'react-native';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -228,7 +229,7 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
           ref={mapRef}
           style={StyleSheet.absoluteFillObject}
           initialRegion={location}
-          mapType="none"
+          mapType="standard"
           onPress={(e) => {
             const newCoords = e.nativeEvent.coordinate;
             const updatedRegion = {
@@ -240,9 +241,13 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
             reverseGeocode(newCoords.latitude, newCoords.longitude);
           }}>
           <UrlTile
-            urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            urlTemplate={
+              Platform.OS === 'android'
+                ? 'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'
+                : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+            }
             maximumZ={19}
-            flipY={false}
+            flipY={true}
           />
           <Marker
             draggable
@@ -261,7 +266,7 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
               reverseGeocode(newCoords.latitude, newCoords.longitude);
             }}>
             <View className="items-center justify-center">
-              <Ionicons name="location" size={40} color="#F6163C" />
+              <Ionicons name="location" size={35} color="#F6163C" />
             </View>
           </Marker>
         </MapView>

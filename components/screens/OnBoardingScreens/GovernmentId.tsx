@@ -1,4 +1,4 @@
-import React, { useImperativeHandle, forwardRef } from 'react';
+import React, { useImperativeHandle, forwardRef, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -16,7 +16,13 @@ export interface GovernmentIdRef {
 
 const GovernmentId = forwardRef<GovernmentIdRef, GovernmentIdProps>(
   ({ govIdUri, setGovIdUri }, ref) => {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { mutateAsync, isPending } = useClientGovId();
+
+    const disabled = isSubmitting || isPending;
+
     const uploadId = async () => {
+      if (disabled) return;
       // Show choices: Camera or Gallery
       Alert.alert('Upload Government ID', 'Choose a source to upload your ID card:', [
         {
@@ -82,8 +88,6 @@ const GovernmentId = forwardRef<GovernmentIdRef, GovernmentIdProps>(
       }
     };
 
-    const { mutateAsync } = useClientGovId();
-
     // Expose uploadId and submit functions to parent
     useImperativeHandle(ref, () => ({
       uploadId,
@@ -92,12 +96,15 @@ const GovernmentId = forwardRef<GovernmentIdRef, GovernmentIdProps>(
           Alert.alert('Validation Error', 'Please upload a government ID.');
           return false;
         }
+        setIsSubmitting(true);
         try {
           await mutateAsync(govIdUri);
           return true;
         } catch (error) {
           console.error('Error uploading government ID:', error);
           return false;
+        } finally {
+          setIsSubmitting(false);
         }
       },
     }));
@@ -120,8 +127,11 @@ const GovernmentId = forwardRef<GovernmentIdRef, GovernmentIdProps>(
                 <Image source={{ uri: govIdUri }} className="h-full w-full" resizeMode="cover" />
                 {/* Floating Clear/Trash Button */}
                 <TouchableOpacity
+                  disabled={disabled}
                   onPress={() => setGovIdUri(null)}
-                  className="absolute bottom-3 right-3 items-center justify-center rounded-full bg-slate-900/80 p-3"
+                  className={`absolute bottom-3 right-3 items-center justify-center rounded-full p-3 ${
+                    disabled ? 'bg-slate-400 opacity-50' : 'bg-slate-900/80'
+                  }`}
                   style={{
                     elevation: 5,
                     shadowColor: '#000',
@@ -135,6 +145,7 @@ const GovernmentId = forwardRef<GovernmentIdRef, GovernmentIdProps>(
               </View>
             ) : (
               <TouchableOpacity
+                disabled={disabled}
                 onPress={uploadId}
                 className="h-full w-full items-center justify-center bg-slate-50"
                 activeOpacity={0.7}>
