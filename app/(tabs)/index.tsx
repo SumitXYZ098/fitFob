@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, Platform } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, Platform, RefreshControl } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 
 const CATEGORIES = ['Gyms', 'Yoga', 'Boxing', 'Dance', 'Crossfit', 'Zumba', 'Pilates'];
 
@@ -31,9 +32,18 @@ const GYM_DATA = [
 ];
 
 export default function HomeScreen() {
+  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState('Gyms');
   const [searchQuery, setSearchQuery] = useState('');
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  }, []);
 
   const toggleFavorite = (id: string) => {
     setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -43,6 +53,9 @@ export default function HomeScreen() {
     <SafeAreaView className="flex-1 bg-[#FAF7F8]">
       <ScrollView
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#E23744']} />
+        }
         contentContainerStyle={{ paddingBottom: Platform.OS === 'ios' ? 90 : 70 }}>
         {/* 1. Header Bar */}
         <View className="flex-row items-center justify-between px-4 pb-3 pt-2">
@@ -56,12 +69,16 @@ export default function HomeScreen() {
 
           {/* Action Icons */}
           <View className="flex-row items-center space-x-3">
-            <TouchableOpacity className="h-10 w-10 items-center justify-center rounded-full bg-[#FFEAEF]">
+            <TouchableOpacity
+              onPress={() => router.push('/notifications')}
+              className="h-10 w-10 items-center justify-center rounded-full bg-[#FFEAEF]">
               <Ionicons name="notifications" size={18} color="#E23744" />
               <View className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#E23744]" />
             </TouchableOpacity>
 
-            <TouchableOpacity className="ml-2 h-10 w-10 items-center justify-center rounded-full bg-[#FFEAEF]">
+            <TouchableOpacity
+              onPress={() => router.push('/profile')}
+              className="ml-2 h-10 w-10 items-center justify-center rounded-full bg-[#FFEAEF]">
               <Ionicons name="person" size={18} color="#E23744" />
             </TouchableOpacity>
           </View>

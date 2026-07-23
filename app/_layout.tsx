@@ -1,25 +1,34 @@
 import { useEffect, useState } from 'react';
 import '../global.css';
+import { View, ActivityIndicator } from 'react-native';
 import { SplashScreen, Stack, useSegments, useRouter } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
 import { useAuthStore } from '@/store/useAuthStore';
+import { registerDeviceTokenWithBackend } from '@/services/notificationService';
 
 const queryClient = new QueryClient();
 
 function NavigationGuard({ children }: { children: React.ReactNode }) {
-  const { user } = useAuthStore();
+  const { user, isInitializing, initializeAuth } = useAuthStore();
   const segments = useSegments();
   const router = useRouter();
   const [isNavigationReady, setIsNavigationReady] = useState(false);
 
   useEffect(() => {
+    initializeAuth();
     setIsNavigationReady(true);
-  }, []);
+  }, [initializeAuth]);
 
   useEffect(() => {
-    if (!isNavigationReady) return;
+    if (user?.token) {
+      registerDeviceTokenWithBackend();
+    }
+  }, [user?.token]);
+
+  useEffect(() => {
+    if (!isNavigationReady || isInitializing) return;
 
     const inAuthGroup =
       segments[0] === 'auth' ||
@@ -42,7 +51,15 @@ function NavigationGuard({ children }: { children: React.ReactNode }) {
         }
       }
     }
-  }, [user, segments, isNavigationReady, router]);
+  }, [user, segments, isNavigationReady, isInitializing, router]);
+
+  if (isInitializing) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <ActivityIndicator size="large" color="#F6163C" />
+      </View>
+    );
+  }
 
   return <>{children}</>;
 }

@@ -7,6 +7,7 @@ import {
   clientGovId,
   clientSubmit,
   checkUserStep,
+  getQr,
 } from '@/api/clientApi';
 import Toast from 'react-native-toast-message';
 
@@ -98,3 +99,15 @@ export const useCheckUserStep = () => {
     },
   });
 };
+
+
+export const useGetQr = () => {
+  return useMutation({
+    mutationFn: getQr,
+    onError: (error: any) => {
+      const msg = error?.response?.data?.error?.message || 'Failed to fetch QR';
+      Toast.show({ type: 'error', text1: 'Error', text2: msg });
+    },
+  });
+};
+

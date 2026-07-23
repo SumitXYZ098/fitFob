@@ -1,75 +1,47 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, Platform, Image, RefreshControl, ActivityIndicator } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import Svg, { Rect } from 'react-native-svg';
 import * as Clipboard from 'expo-clipboard';
 import Toast from 'react-native-toast-message';
 import { Container } from '@/components/modules/Container';
-
-const USER_ID = '123-456-789';
-
-function StyledQRCode({ size = 260 }: { size?: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 200 200" fill="none">
-      {/* Top Left Marker */}
-      <Rect x="10" y="10" width="48" height="48" rx="12" stroke="#1C1C1C" strokeWidth="6" />
-      <Rect x="23" y="23" width="22" height="22" rx="6" fill="#E23744" />
-
-      {/* Top Right Marker */}
-      <Rect x="142" y="10" width="48" height="48" rx="12" stroke="#1C1C1C" strokeWidth="6" />
-      <Rect x="155" y="23" width="22" height="22" rx="6" fill="#E23744" />
-
-      {/* Bottom Left Marker */}
-      <Rect x="10" y="142" width="48" height="48" rx="12" stroke="#1C1C1C" strokeWidth="6" />
-      <Rect x="23" y="155" width="22" height="22" rx="6" fill="#E23744" />
-
-      {/* Bottom Right Marker */}
-      <Rect x="142" y="142" width="48" height="48" rx="12" stroke="#1C1C1C" strokeWidth="6" />
-      <Rect x="155" y="155" width="22" height="22" rx="6" fill="#E23744" />
-
-      {/* Data Pattern Modules */}
-      <Rect x="68" y="12" width="10" height="22" rx="4" fill="#1C1C1C" />
-      <Rect x="88" y="12" width="24" height="10" rx="4" fill="#1C1C1C" />
-      <Rect x="120" y="12" width="10" height="10" rx="4" fill="#1C1C1C" />
-
-      <Rect x="68" y="42" width="30" height="10" rx="4" fill="#1C1C1C" />
-      <Rect x="108" y="30" width="10" height="32" rx="4" fill="#1C1C1C" />
-
-      <Rect x="10" y="68" width="48" height="10" rx="4" fill="#1C1C1C" />
-      <Rect x="68" y="60" width="10" height="24" rx="4" fill="#1C1C1C" />
-      <Rect x="88" y="68" width="40" height="10" rx="4" fill="#1C1C1C" />
-      <Rect x="142" y="68" width="24" height="10" rx="4" fill="#1C1C1C" />
-      <Rect x="176" y="68" width="14" height="14" rx="4" fill="#1C1C1C" />
-
-      <Rect x="12" y="88" width="10" height="24" rx="4" fill="#1C1C1C" />
-      <Rect x="30" y="88" width="24" height="10" rx="4" fill="#1C1C1C" />
-      <Rect x="64" y="92" width="36" height="10" rx="4" fill="#1C1C1C" />
-      <Rect x="110" y="80" width="10" height="30" rx="4" fill="#1C1C1C" />
-      <Rect x="130" y="90" width="10" height="20" rx="4" fill="#1C1C1C" />
-      <Rect x="150" y="88" width="38" height="10" rx="4" fill="#1C1C1C" />
-
-      <Rect x="12" y="120" width="20" height="10" rx="4" fill="#1C1C1C" />
-      <Rect x="40" y="110" width="10" height="24" rx="4" fill="#1C1C1C" />
-      <Rect x="68" y="110" width="24" height="10" rx="4" fill="#1C1C1C" />
-      <Rect x="100" y="118" width="10" height="20" rx="4" fill="#1C1C1C" />
-      <Rect x="120" y="118" width="30" height="10" rx="4" fill="#1C1C1C" />
-      <Rect x="160" y="108" width="10" height="24" rx="4" fill="#1C1C1C" />
-
-      <Rect x="68" y="142" width="10" height="24" rx="4" fill="#1C1C1C" />
-      <Rect x="88" y="150" width="20" height="10" rx="4" fill="#1C1C1C" />
-      <Rect x="118" y="142" width="10" height="24" rx="4" fill="#1C1C1C" />
-
-      <Rect x="68" y="176" width="38" height="10" rx="4" fill="#1C1C1C" />
-      <Rect x="118" y="176" width="10" height="14" rx="4" fill="#1C1C1C" />
-    </Svg>
-  );
-}
+import { useGetQr } from '@/hook/useClient';
 
 export default function ScanScreen() {
   const router = useRouter();
+  const getQrMutation = useGetQr();
+  const { isPending, data } = getQrMutation;
+  const [refreshing, setRefreshing] = useState(false);
+
+  const USER_ID = data?.data?.clientId || 'N/A';
+  const isLoading = isPending || refreshing;
+
+  const handleReload = useCallback(async () => {
+    try {
+      await getQrMutation.mutateAsync();
+    } catch (error) {
+      console.error('Error reloading QR:', error);
+    }
+  }, [getQrMutation]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await getQrMutation.mutateAsync();
+    } catch (error) {
+      console.error('Error refreshing QR:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [getQrMutation]);
+
+  useEffect(() => {
+    handleReload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleCopyId = async () => {
+    if (!USER_ID || USER_ID === 'N/A') return;
     await Clipboard.setStringAsync(USER_ID);
     Toast.show({
       type: 'success',
@@ -78,18 +50,10 @@ export default function ScanScreen() {
     });
   };
 
-  const handleScanPress = () => {
-    Toast.show({
-      type: 'info',
-      text1: 'Scanner Active',
-      text2: 'Hold QR code near the gym entrance reader.',
-    });
-  };
-
   return (
     <Container>
       {/* 1. Header */}
-      <View className="flex-row items-center justify-between px-4 pb-2 pt-2">
+      <View className="flex-row items-center justify-between pb-2 pt-2">
         <TouchableOpacity
           onPress={() => router.replace('/(tabs)')}
           className="h-10 w-10 items-center justify-center rounded-full">
@@ -98,13 +62,18 @@ export default function ScanScreen() {
 
         <Text className="font-bold text-lg text-darkText">Check In</Text>
 
-        <TouchableOpacity className="h-10 w-10 items-center justify-center rounded-full">
+        <TouchableOpacity
+          onPress={() => router.push('/notifications')}
+          className="h-10 w-10 items-center justify-center rounded-full">
           <Ionicons name="notifications" size={20} color="#E23744" />
         </TouchableOpacity>
       </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#F6163C']} />
+        }
         contentContainerStyle={{
           alignItems: 'center',
           paddingHorizontal: 24,
@@ -116,17 +85,39 @@ export default function ScanScreen() {
           Scan code at the gym’s entrance to check in.
         </Text>
 
-        {/* 3. QR Code Display */}
-        <View className="my-8 items-center justify-center p-2">
-          <StyledQRCode size={260} />
+        {/* 3. QR Code Display / Loading Animation */}
+        <View className="my-8 h-[260px] w-[260px] items-center justify-center rounded-3xl border border-slate-100 bg-white p-2 shadow-sm">
+          {isLoading ? (
+            <View className="items-center justify-center">
+              <ActivityIndicator size="large" color="#F6163C" />
+              <Text className="mt-3 font-medium text-xs text-slate-400">Loading QR Code...</Text>
+            </View>
+          ) : data?.data?.qrCode ? (
+            <Image
+              source={{ uri: data.data.qrCode }}
+              style={{ width: 240, height: 240 }}
+              resizeMode="contain"
+            />
+          ) : (
+            <View className="items-center justify-center px-4">
+              <Ionicons name="qr-code-outline" size={64} color="#CBD5E1" />
+              <Text className="mt-2 text-center text-xs text-slate-400">
+                Tap reload below to generate QR Code
+              </Text>
+            </View>
+          )}
         </View>
 
-        {/* 4. Action Button */}
+        {/* 4. Action Button - Reload QR Code */}
         <TouchableOpacity
-          onPress={handleScanPress}
+          onPress={handleReload}
+          disabled={isLoading}
           activeOpacity={0.8}
-          className="w-full items-center justify-center rounded-2xl bg-[#F6163C] py-4 shadow-sm">
-          <Text className="font-bold text-base text-white">Scan QR Code</Text>
+          className="w-full flex-row items-center justify-center rounded-2xl bg-[#F6163C] py-4 shadow-sm">
+          <Ionicons name="refresh-outline" size={20} color="#FFFFFF" />
+          <Text className="ml-2 font-bold text-base text-white">
+            {isLoading ? 'Reloading...' : 'Reload QR Code'}
+          </Text>
         </TouchableOpacity>
 
         {/* 5. Trouble scanning / ID Section */}
@@ -141,6 +132,7 @@ export default function ScanScreen() {
 
           <TouchableOpacity
             onPress={handleCopyId}
+            disabled={!USER_ID || USER_ID === 'N/A'}
             className="h-10 w-10 items-center justify-center rounded-xl bg-[#FFEAEF]">
             <MaterialCommunityIcons name="content-copy" size={18} color="#F6163C" />
           </TouchableOpacity>

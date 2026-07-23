@@ -45,28 +45,66 @@ export default function Login() {
     control,
     handleSubmit,
     setError,
+    setValue,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: { identifier: '', password: '' },
   });
 
+  // Load remembered user on mount
+  React.useEffect(() => {
+    const loadRememberedUser = async () => {
+      try {
+        const stored = await AsyncStorage.getItem('rememberedUser');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed?.identifier) {
+            setValue('identifier', parsed.identifier);
+            setRememberMe(true);
+          }
+        }
+      } catch (err) {
+        console.log('Error loading remembered user:', err);
+      }
+    };
+    loadRememberedUser();
+  }, [setValue]);
+
   const { setUser } = useAuthStore();
   const onSubmit = (data: LoginFormData) => {
     loginMutation(data, {
       onSuccess: async (response) => {
-        if (rememberMe) {
-          await AsyncStorage.setItem('rememberUser', JSON.stringify(response));
+        if (response && response.jwt && response.user) {
+          if (rememberMe) {
+            await AsyncStorage.setItem(
+              'rememberedUser',
+              JSON.stringify({ identifier: data.identifier })
+            );
+          } else {
+            await AsyncStorage.removeItem('rememberedUser');
+          }
+
+          const userWithToken = {
+            ...response.user,
+            token: response.jwt,
+          };
+          await setUser(userWithToken, rememberMe);
+
+          Toast.show({
+            type: 'success',
+            text1: 'Login Successful',
+            text2: 'Welcome back! 👋',
+          });
+
+          if (userWithToken.verification_status === 'approved') {
+            router.replace('/(tabs)');
+          } else if (userWithToken.verification_status === 'in-review') {
+            router.replace('/onBoardingScreen/UnderReview');
+          } else {
+            router.replace('/onBoardingScreen/OnBoardingStep');
+          }
         }
-        setUser(response);
-
-        Toast.show({
-          type: 'success',
-          text1: 'Login Successful',
-          text2: 'Welcome back! 👋',
-        });
-
-        router.replace('/');
       },
 
       onError: (error: any) => {

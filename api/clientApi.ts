@@ -117,3 +117,15 @@ export const checkUserStep = async () => {
     throw error;
   }
 };
+
+
+// Get Qr
+export const getQr = async () => {
+  try {
+    const response = await apiInstance.get(ENDPOINTS.GET_QR);
+
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

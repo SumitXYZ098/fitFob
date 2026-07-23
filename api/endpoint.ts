@@ -22,4 +22,11 @@ export const ENDPOINTS = {
   CHECK_STEP: `${BASE_URL}/api/pending-client/me`,
 
   // Dashboard
+
+  // Screen
+  GET_QR: `${BASE_URL}/api/client/qr`,
+  
+  // Notifications
+  REGISTER_DEVICE_TOKEN: `${BASE_URL}/api/device-tokens/register`,
+  UNREGISTER_DEVICE_TOKEN: `${BASE_URL}/api/device-tokens/unregister`,
 };
