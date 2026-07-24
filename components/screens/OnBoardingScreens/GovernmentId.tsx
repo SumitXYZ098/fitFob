@@ -61,7 +61,7 @@ const GovernmentId = forwardRef<GovernmentIdRef, GovernmentIdProps>(
           setGovIdUri(result.assets[0].uri);
         }
       } catch (error) {
-        console.error('Error launching camera:', error);
+        console.log('Error launching camera:', error);
         Alert.alert('Error', 'Unable to open the camera.');
       }
     };
@@ -83,7 +83,7 @@ const GovernmentId = forwardRef<GovernmentIdRef, GovernmentIdProps>(
           setGovIdUri(result.assets[0].uri);
         }
       } catch (error) {
-        console.error('Error launching library:', error);
+        console.log('Error launching library:', error);
         Alert.alert('Error', 'Unable to open your photo gallery.');
       }
     };
@@ -101,7 +101,7 @@ const GovernmentId = forwardRef<GovernmentIdRef, GovernmentIdProps>(
           await mutateAsync(govIdUri);
           return true;
         } catch (error) {
-          console.error('Error uploading government ID:', error);
+          console.log('Error uploading government ID:', error);
           return false;
         } finally {
           setIsSubmitting(false);

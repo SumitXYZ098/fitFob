@@ -1,8 +1,17 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { Tabs, useRouter } from 'expo-router';
+import React, { useEffect } from 'react';
 import { Platform, View, Image } from 'react-native';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function TabLayout() {
+  const { user, isInitializing } = useAuthStore();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isInitializing && !user) {
+      router.replace('/welcome');
+    }
+  }, [user, isInitializing, router]);
   const homeFill = require('../../assets/icons/fill_home.png');
   const homeUnfill = require('../../assets/icons/home.png');
 

@@ -9,8 +9,11 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { useAuthStore } from '@/store/useAuthStore';
+
 export default function Splash() {
   const router = useRouter();
+  const { user, isInitializing } = useAuthStore();
 
   // Logo animation values
   const translateY = useSharedValue(40);
@@ -46,11 +49,23 @@ export default function Splash() {
     });
 
     const t = setTimeout(() => {
-      router.replace('/onBoardingScreen/Congratulations');
+      if (isInitializing) return;
+
+      if (!user) {
+        router.replace('/welcome');
+      } else {
+        if (user.verification_status === 'in-review') {
+          router.replace('/onBoardingScreen/UnderReview');
+        } else if (user.verification_status === 'pending') {
+          router.replace('/onBoardingScreen/OnBoardingStep');
+        } else {
+          router.replace('/(tabs)');
+        }
+      }
     }, 1500);
 
     return () => clearTimeout(t);
-  }, [logoOpacity, router, textOpacity, translateY]);
+  }, [isInitializing, logoOpacity, router, textOpacity, translateY, user]);
 
   return (
     <ImageBackground

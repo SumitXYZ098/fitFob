@@ -18,8 +18,6 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user, logOut } = useAuthStore();
 
-  console.log(user, "User")
-
   const handleLogout = async () => {
     try {
       await logOut();
@@ -56,12 +54,19 @@ export default function ProfileScreen() {
       id: 'visited-clubs',
       title: 'Visited Clubs',
       iconName: 'location-outline',
+      badge: (
+        <View className="mr-2 h-5 w-5 items-center justify-center rounded-full bg-[#F6163C]">
+          <Text className="font-bold text-[11px] text-white">5</Text>
+        </View>
+      ),
+      route: '/(tabs)/transactions',
     },
     {
       id: 'id-verification',
       title: 'ID Verification',
       iconName: 'id-card-outline',
       badge: <Ionicons name="checkmark-circle" size={20} color="#10B981" className="mr-2" />,
+      route: '/id-verification',
     },
     {
       id: 'favorites',
@@ -124,8 +129,8 @@ export default function ProfileScreen() {
                 <View className="h-16 w-16 overflow-hidden rounded-full border-2 border-white">
                   <Image
                     source={
-                      user?.avatarUpload?.url
-                        ? { uri: user.avatarUpload.url }
+                      user?.clientDetail?.selfieUrl
+                        ? { uri: user.clientDetail.selfieUrl }
                         : require('../assets/images/male.png')
                     }
                     className="h-full w-full"
@@ -143,11 +148,11 @@ export default function ProfileScreen() {
               <View className="ml-3 flex-1 justify-center">
                 <View className="flex-row items-center">
                   <Text className="font-bold text-xl text-white">
-                    {user?.name || user?.username || 'Alex Carter'}
+                    {user?.clientDetail?.name || user?.username || 'Alex Carter'}
                   </Text>
                   <Ionicons name="checkmark-circle" size={18} color="#FFFFFF" className="ml-1.5" />
                 </View>
-                <Text className="mt-0.5 font-regular text-xs text-white/80">
+                <Text className="font-regular mt-0.5 text-xs text-white/80">
                   {user?.email || 'alexcarter@gmail.com'}
                 </Text>
               </View>
@@ -179,7 +184,7 @@ export default function ProfileScreen() {
               key={item.id}
               activeOpacity={0.7}
               onPress={() => handleItemPress(item)}
-              className="flex-row items-center justify-between border-b border-slate-100 py-3.5 px-1">
+              className="flex-row items-center justify-between border-b border-slate-100 px-1 py-3.5">
               <View className="flex-row items-center space-x-3.5">
                 <View className="h-11 w-11 items-center justify-center rounded-2xl bg-[#FFEAEF]">
                   <Ionicons name={item.iconName} size={20} color="#F6163C" />

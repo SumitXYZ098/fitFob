@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -60,8 +61,22 @@ export default function ForgotPasswordScreen() {
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled">
         <View className="flex-1 ">
+          {/* Back Button */}
+          <TouchableOpacity
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace('/auth/Login');
+              }
+            }}
+            className="mt-2 h-10 w-10 items-center justify-center rounded-full"
+            activeOpacity={0.7}>
+            <Ionicons name="chevron-back" size={24} color="#1C1C1C" />
+          </TouchableOpacity>
+
           {/* Title Section */}
-          <View className="mt-8">
+          <View className="mt-4">
             <Text
               className="font-bold text-4xl text-slate-900"
               style={{ fontFamily: 'PlusJakartaSans-Bold' }}>

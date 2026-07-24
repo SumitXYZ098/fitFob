@@ -3,10 +3,12 @@ import { View, Text, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Container } from '@/components/modules/Container';
 import { Button } from '@/components/modules/Button';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function Congratulations() {
   const router = useRouter();
-
+  const { user } = useAuthStore();
+  console.log('user>>>>>>>>>>>>>>>', user);
   const handleFinish = () => {
     router.replace('/(tabs)');
   };

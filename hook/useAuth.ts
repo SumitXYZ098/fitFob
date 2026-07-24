@@ -54,7 +54,6 @@ export const useVerifyOtp = () => {
 
 export const useLoginRequest = () => {
   const { setUser } = useAuthStore();
-  const router = useRouter();
   return useMutation({
     mutationFn: loginUserApi,
     onSuccess: (data) => {
@@ -68,9 +67,6 @@ export const useLoginRequest = () => {
 
         setUser(userWithToken, true);
         console.log(userWithToken, 'usr Data');
-
-        // 🚀 Always go to onboarding flow checker
-        router.replace('/onBoardingScreen/OnBoardingStep');
       }
     },
   });
