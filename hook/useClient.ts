@@ -10,8 +10,10 @@ import {
   getQr,
 } from '@/api/clientApi';
 import Toast from 'react-native-toast-message';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export const useClientBasicDetails = () => {
+  const { logOut } = useAuthStore();
   return useMutation({
     mutationFn: ({
       name,
@@ -25,7 +27,16 @@ export const useClientBasicDetails = () => {
       gender?: string;
     }) => clientBasicDetails(name, email, phoneNumber, gender),
     onError: (error: any) => {
-      const msg = error?.response?.data?.error?.message || 'Failed to save basic details';
+      const msg =
+        error?.response?.data?.error?.message ||
+        error?.response?.data?.message ||
+        'Failed to save basic details';
+      if (
+        msg === 'Client detail already exists' ||
+        msg?.toLowerCase()?.includes('client detail already exists')
+      ) {
+        logOut();
+      }
       Toast.show({ type: 'error', text1: 'Error', text2: msg });
     },
   });
@@ -91,15 +102,24 @@ export const useClientSubmit = () => {
 };
 
 export const useCheckUserStep = () => {
+  const { logOut } = useAuthStore();
   return useMutation({
     mutationFn: checkUserStep,
     onError: (error: any) => {
-      const msg = error?.response?.data?.error?.message || 'Failed to fetch status';
-      Toast.show({ type: 'error', text1: 'Error', text2: msg });
+      const msg =
+        error?.response?.data?.error?.message ||
+        error?.response?.data?.message ||
+        'Failed to fetch status';
+      if (
+        msg === 'Client detail already exists' ||
+        msg?.toLowerCase()?.includes('client detail already exists')
+      ) {
+        logOut();
+      }
+      Toast.show({ type: 'error', text1: 'Error Checks', text2: msg });
     },
   });
 };
-
 
 export const useGetQr = () => {
   return useMutation({
@@ -110,4 +130,3 @@ export const useGetQr = () => {
     },
   });
 };
-

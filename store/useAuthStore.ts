@@ -1,6 +1,5 @@
 import { storageAPI } from '@/utility/storage';
 import { create } from 'zustand';
-import { unregisterDeviceTokenWithBackend } from '@/services/notificationService';
 
 interface User {
   id: number;
@@ -44,6 +43,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   logOut: async () => {
     try {
+      const { unregisterDeviceTokenWithBackend } = await import('@/services/notificationService');
       await unregisterDeviceTokenWithBackend();
     } catch (err) {
       console.error('Error unregistering device token on logout:', err);

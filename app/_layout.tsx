@@ -32,6 +32,8 @@ export default function Layout() {
     }
   }, [user?.token]);
 
+  console.log('User=========>>', user);
+
   useEffect(() => {
     if (loaded) SplashScreen.hideAsync();
   }, [loaded]);

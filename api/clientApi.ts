@@ -118,7 +118,6 @@ export const checkUserStep = async () => {
   }
 };
 
-
 // Get Qr
 export const getQr = async () => {
   try {
