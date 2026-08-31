@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import {
   View,
@@ -9,7 +10,6 @@ import {
   ActivityIndicator,
   ScrollView,
   Keyboard,
-  Platform,
 } from 'react-native';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -241,11 +241,7 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
             reverseGeocode(newCoords.latitude, newCoords.longitude);
           }}>
           <UrlTile
-            urlTemplate={
-              Platform.OS === 'android'
-                ? 'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'
-                : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
-            }
+            urlTemplate={'https://tile.openstreetmap.org/{z}/{x}/{y}.png'}
             maximumZ={19}
             flipY={true}
           />
