@@ -93,5 +93,18 @@
     "fsevents@2.3.3": true,
     "protobufjs@7.6.5": true,
     "unrs-resolver@1.12.2": true
+  },
+  "overrides": {
+    "@callstack/react-theme-provider": {
+      "react": "$react"
+    },
+    "modal-react-native-web": {
+      "react": "$react",
+      "react-dom": "$react-dom",
+      "react-native-web": "$react-native-web"
+    },
+    "react-art": {
+      "react": "$react"
+    }
   }
 }
