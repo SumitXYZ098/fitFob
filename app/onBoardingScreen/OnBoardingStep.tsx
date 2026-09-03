@@ -76,7 +76,7 @@ export default function OnBoardingStep() {
     };
 
     checkProgress();
-  }, [router, paramStep]);
+  }, [router, paramStep, checkUserStepMutation]);
 
   const handleNext = async () => {
     setLoading(true);

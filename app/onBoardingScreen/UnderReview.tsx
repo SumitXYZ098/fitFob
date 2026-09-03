@@ -18,12 +18,11 @@ export default function UnderReview() {
   const checkVerificationStatus = async () => {
     try {
       const userData = await checkStatusMutation.mutateAsync();
-
       if (userData) {
         if (user) {
           await setUser({
             ...user,
-            verification_status: userData.verification_status,
+            verification_status: userData?.details?.user?.verification_status,
           });
         }
 
@@ -71,7 +70,7 @@ export default function UnderReview() {
     } finally {
       setRefreshing(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleBack = () => {
