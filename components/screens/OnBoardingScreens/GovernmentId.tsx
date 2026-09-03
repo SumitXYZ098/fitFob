@@ -2,6 +2,7 @@ import React, { useImperativeHandle, forwardRef, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { useClientGovId } from '@/hook/useClient';
 
 interface GovernmentIdProps {
@@ -58,7 +59,12 @@ const GovernmentId = forwardRef<GovernmentIdRef, GovernmentIdProps>(
         });
 
         if (!result.canceled && result.assets && result.assets.length > 0) {
-          setGovIdUri(result.assets[0].uri);
+          const manipResult = await manipulateAsync(
+            result.assets[0].uri,
+            [{ resize: { width: 1600 } }],
+            { compress: 0.8, format: SaveFormat.JPEG }
+          );
+          setGovIdUri(manipResult.uri);
         }
       } catch (error) {
         console.log('Error launching camera:', error);
@@ -80,7 +86,12 @@ const GovernmentId = forwardRef<GovernmentIdRef, GovernmentIdProps>(
         });
 
         if (!result.canceled && result.assets && result.assets.length > 0) {
-          setGovIdUri(result.assets[0].uri);
+          const manipResult = await manipulateAsync(
+            result.assets[0].uri,
+            [{ resize: { width: 1600 } }],
+            { compress: 0.8, format: SaveFormat.JPEG }
+          );
+          setGovIdUri(manipResult.uri);
         }
       } catch (error) {
         console.log('Error launching library:', error);

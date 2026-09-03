@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   ScrollView,
   Keyboard,
+  Platform,
 } from 'react-native';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -36,14 +37,15 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
   const [city, setCity] = useState('');
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [addressLoading, setAddressLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const mapRef = useRef<MapView>(null);
 
   const [location, setLocation] = useState({
     latitude: prefill?.latitude ? parseFloat(prefill.latitude) : 28.6139,
     longitude: prefill?.longitude ? parseFloat(prefill.longitude) : 77.209,
-    latitudeDelta: 0.01,
-    longitudeDelta: 0.01,
+    latitudeDelta: 0.008,
+    longitudeDelta: 0.008,
   });
 
   useImperativeHandle(ref, () => ({
@@ -60,6 +62,60 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
       }
     },
   }));
+
+  // Reverse Geocode: Get full address string from coordinates using OpenStreetMap Nominatim with native fallback
+  const reverseGeocode = async (latitude: number, longitude: number) => {
+    setAddressLoading(true);
+    try {
+      // 1. First attempt: OpenStreetMap Nominatim reverse geocode
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`,
+        {
+          headers: {
+            'User-Agent': 'FitFobApp/1.0 (contact@fitfob.com)',
+            'Accept-Language': 'en',
+          },
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.display_name) {
+          setCity(data.display_name);
+          setAddressLoading(false);
+          return;
+        }
+      }
+    } catch (error) {
+      console.log('Nominatim reverse geocode error, attempting native fallback:', error);
+    }
+
+    // 2. Fallback: Native device reverse geocoding via expo-location
+    try {
+      const addresses = await Location.reverseGeocodeAsync({ latitude, longitude });
+      if (addresses && addresses.length > 0) {
+        const item = addresses[0];
+        const parts = [
+          item.name,
+          item.streetNumber ? `${item.streetNumber} ${item.street || ''}`.trim() : item.street,
+          item.district || item.subregion,
+          item.city,
+          item.region,
+          item.postalCode,
+          item.country,
+        ].filter(Boolean) as string[];
+
+        // Remove duplicates while keeping order
+        const uniqueParts = parts.filter((val, idx) => parts.indexOf(val) === idx);
+        if (uniqueParts.length > 0) {
+          setCity(uniqueParts.join(', '));
+        }
+      }
+    } catch (fallbackError) {
+      console.log('Native reverse geocode error:', fallbackError);
+    } finally {
+      setAddressLoading(false);
+    }
+  };
 
   const getCurrentLocation = async () => {
     setLoading(true);
@@ -81,30 +137,39 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
         return;
       }
 
-      let userLocation = await Location.getLastKnownPositionAsync();
+      let userLocation: Location.LocationObject | null = null;
 
-      if (!userLocation) {
+      try {
         const positionPromise = Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.Balanced,
         });
         const timeoutPromise = new Promise<null>((_, reject) =>
-          setTimeout(() => reject(new Error('Location request timed out')), 10000)
+          setTimeout(() => reject(new Error('Location request timed out')), 8000)
         );
-        userLocation = await Promise.race([positionPromise, timeoutPromise]);
+        userLocation = (await Promise.race([
+          positionPromise,
+          timeoutPromise,
+        ])) as Location.LocationObject;
+      } catch (err) {
+        console.log('getCurrentPosition timed out or failed, checking last known position:', err);
+      }
+
+      if (!userLocation) {
+        userLocation = await Location.getLastKnownPositionAsync();
       }
 
       if (userLocation) {
         const newCoords = {
           latitude: userLocation.coords.latitude,
           longitude: userLocation.coords.longitude,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
+          latitudeDelta: 0.008,
+          longitudeDelta: 0.008,
         };
 
         setLocation(newCoords);
-        mapRef.current?.animateToRegion(newCoords, 1000);
+        mapRef.current?.animateToRegion(newCoords, 800);
 
-        // Get readable address name
+        // Get readable full address for current location
         reverseGeocode(newCoords.latitude, newCoords.longitude);
       } else {
         throw new Error('Could not retrieve location.');
@@ -120,26 +185,6 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
     }
   };
 
-  // Reverse Geocode: Get address string from coordinates
-  const reverseGeocode = async (latitude: number, longitude: number) => {
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
-        {
-          headers: {
-            'User-Agent': 'FitFobClient/1.0',
-          },
-        }
-      );
-      const data = await response.json();
-      if (data && data.display_name) {
-        setCity(data.display_name);
-      }
-    } catch (error) {
-      console.log('Error reverse geocoding:', error);
-    }
-  };
-
   // Auto-Detect Location on Mount or use prefilled coordinates
   useEffect(() => {
     if (prefill?.latitude && prefill?.longitude) {
@@ -148,11 +193,11 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
       const newCoords = {
         latitude: lat,
         longitude: lon,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
+        latitudeDelta: 0.008,
+        longitudeDelta: 0.008,
       };
       setLocation(newCoords);
-      mapRef.current?.animateToRegion(newCoords, 1000);
+      mapRef.current?.animateToRegion(newCoords, 800);
       reverseGeocode(lat, lon);
     } else {
       getCurrentLocation();
@@ -171,7 +216,8 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
         `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=5&addressdetails=1`,
         {
           headers: {
-            'User-Agent': 'FitFobClient/1.0',
+            'User-Agent': 'FitFobApp/1.0 (contact@fitfob.com)',
+            'Accept-Language': 'en',
           },
         }
       );
@@ -183,11 +229,11 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
           const newCoords = {
             latitude: parseFloat(item.lat),
             longitude: parseFloat(item.lon),
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
+            latitudeDelta: 0.008,
+            longitudeDelta: 0.008,
           };
           setLocation(newCoords);
-          mapRef.current?.animateToRegion(newCoords, 1000);
+          mapRef.current?.animateToRegion(newCoords, 800);
           setCity(item.display_name);
         } else {
           // Multiple matches -> show suggestions dropdown
@@ -211,39 +257,49 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
     const newCoords = {
       latitude: parseFloat(item.lat),
       longitude: parseFloat(item.lon),
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
+      latitudeDelta: 0.008,
+      longitudeDelta: 0.008,
     };
     setLocation(newCoords);
-    mapRef.current?.animateToRegion(newCoords, 1000);
+    mapRef.current?.animateToRegion(newCoords, 800);
     setCity(item.display_name);
     setSuggestions([]); // Clear suggestions
   };
 
+  // Handler when marker is moved or map is tapped
+  const handleLocationUpdate = (latitude: number, longitude: number) => {
+    const updatedCoords = {
+      ...location,
+      latitude,
+      longitude,
+    };
+    setLocation(updatedCoords);
+    mapRef.current?.animateToRegion(updatedCoords, 500);
+    reverseGeocode(latitude, longitude);
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
-      {/* --- MAP SECTION --- */}
+      {/* --- OPENSTREETMAP SECTION --- */}
       <View style={StyleSheet.absoluteFillObject}>
         <MapView
-          className="rounded-lg"
           ref={mapRef}
           style={StyleSheet.absoluteFillObject}
           initialRegion={location}
-          mapType="standard"
+          mapType={Platform.OS === 'android' ? 'none' : 'standard'}
+          rotateEnabled={false}
           onPress={(e) => {
-            const newCoords = e.nativeEvent.coordinate;
-            const updatedRegion = {
-              ...location,
-              latitude: newCoords.latitude,
-              longitude: newCoords.longitude,
-            };
-            setLocation(updatedRegion);
-            reverseGeocode(newCoords.latitude, newCoords.longitude);
+            const coords = e.nativeEvent.coordinate;
+            if (coords) {
+              handleLocationUpdate(coords.latitude, coords.longitude);
+            }
           }}>
           <UrlTile
-            urlTemplate={'https://tile.openstreetmap.org/{z}/{x}/{y}.png'}
+            urlTemplate="https://tile.openstreetmap.de/{z}/{x}/{y}.png"
             maximumZ={19}
-            flipY={true}
+            flipY={false}
+            shouldReplaceMapContent={true}
+            zIndex={1}
           />
           <Marker
             draggable
@@ -251,18 +307,15 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
               latitude: location.latitude,
               longitude: location.longitude,
             }}
+            anchor={{ x: 0.5, y: 1 }}
             onDragEnd={(e) => {
-              const newCoords = e.nativeEvent.coordinate;
-              const updatedRegion = {
-                ...location,
-                latitude: newCoords.latitude,
-                longitude: newCoords.longitude,
-              };
-              setLocation(updatedRegion);
-              reverseGeocode(newCoords.latitude, newCoords.longitude);
+              const coords = e.nativeEvent.coordinate;
+              if (coords) {
+                handleLocationUpdate(coords.latitude, coords.longitude);
+              }
             }}>
             <View className="items-center justify-center">
-              <Ionicons name="location" size={35} color="#F6163C" />
+              <Ionicons name="location" size={38} color="#F6163C" />
             </View>
           </Marker>
         </MapView>
@@ -299,9 +352,14 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
         <View
           className="mb-2 flex-row items-center rounded-full bg-white py-1.5 pl-6 pr-2"
           style={{ elevation: 15, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 15 }}>
+          {addressLoading ? (
+            <View className="mr-2">
+              <ActivityIndicator color="#F6163C" size="small" />
+            </View>
+          ) : null}
           <TextInput
-            placeholder="Search location..."
-            className="flex-1 font-medium text-[16px] text-slate-700"
+            placeholder={addressLoading ? 'Fetching address...' : 'Search location...'}
+            className="flex-1 font-medium text-[15px] text-slate-700"
             value={city}
             onChangeText={(text) => {
               setCity(text);

@@ -124,10 +124,14 @@ const SelfieContent = forwardRef<SelfieScreenRef, SelfieScreenProps>(
 
           if (photo && photo.uri) {
             // Flip captured photo horizontally so it is not a mirrored selfie
-            const manipResult = await manipulateAsync(photo.uri, [{ flip: FlipType.Horizontal }], {
-              compress: 0.85,
-              format: SaveFormat.JPEG,
-            });
+            const manipResult = await manipulateAsync(
+              photo.uri,
+              [{ flip: FlipType.Horizontal }, { resize: { width: 1200 } }],
+              {
+                compress: 0.8,
+                format: SaveFormat.JPEG,
+              }
+            );
 
             // Perform on-device face detection if MLKit native module is present
             if (faceDetector) {
