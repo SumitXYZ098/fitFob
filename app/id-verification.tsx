@@ -148,7 +148,7 @@ export default function IdVerificationScreen() {
     <Container>
       {/* Confetti Overlay */}
       <View
-        style={StyleSheet.absoluteFillObject}
+        style={StyleSheet.absoluteFill}
         pointerEvents="none"
         className="z-50 items-center justify-center">
         {particles.map((p) => {

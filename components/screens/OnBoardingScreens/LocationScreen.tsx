@@ -281,10 +281,10 @@ const LocationScreen = forwardRef<LocationScreenRef, LocationScreenProps>(({ pre
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       {/* --- OPENSTREETMAP SECTION --- */}
-      <View style={StyleSheet.absoluteFillObject}>
+      <View style={StyleSheet.absoluteFill}>
         <MapView
           ref={mapRef}
-          style={StyleSheet.absoluteFillObject}
+          style={StyleSheet.absoluteFill}
           initialRegion={location}
           mapType={Platform.OS === 'android' ? 'none' : 'standard'}
           rotateEnabled={false}

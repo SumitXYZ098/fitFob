@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import '../global.css';
 import { View, ActivityIndicator } from 'react-native';
-import { SplashScreen, Stack } from 'expo-router';
+import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
@@ -32,10 +33,10 @@ export default function Layout() {
     }
   }, [user?.token]);
 
-  console.log('User=========>>', user);
-
   useEffect(() => {
-    if (loaded) SplashScreen.hideAsync();
+    if (loaded) {
+      SplashScreen.hideAsync();
+    }
   }, [loaded]);
 
   if (!loaded || isInitializing) {

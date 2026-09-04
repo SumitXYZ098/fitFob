@@ -1,4 +1,3 @@
-/* eslint-env node */
 const { defineConfig } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
 
@@ -10,6 +9,8 @@ module.exports = defineConfig([
   {
     rules: {
       'react/display-name': 'off',
+      'react-hooks/immutability': 'off',
+      'react-hooks/refs': 'off',
     },
   },
 ]);

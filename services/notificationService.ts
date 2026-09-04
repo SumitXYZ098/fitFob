@@ -1,39 +1,63 @@
-import * as Notifications from 'expo-notifications';
+/* eslint-disable @typescript-eslint/no-require-imports */
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+import { isRunningInExpoGo } from 'expo';
 import apiInstance from '@/api/apiInstance';
 import { ENDPOINTS } from '@/api/endpoint';
 
+let Notifications: typeof import('expo-notifications') | null = null;
+
+// Remote push notifications were removed from Expo Go on Android in SDK 53+.
+// Loading expo-notifications on Android in Expo Go throws an unhandled exception at import time.
+if (isRunningInExpoGo() && Platform.OS === 'android') {
+  console.warn(
+    'expo-notifications: Android Push notifications functionality provided by expo-notifications was removed from Expo Go in SDK 53+. Push notification setup is skipped in Expo Go. Use a development build (npx expo run:android) instead.'
+  );
+} else {
+  try {
+    Notifications = require('expo-notifications');
+  } catch (error) {
+    console.warn('Failed to load expo-notifications module:', error);
+  }
+}
+
 // Configure notification behavior when app is in foreground
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
+if (Notifications?.setNotificationHandler) {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
+}
 
 export async function registerForPushNotificationsAsync(): Promise<string | undefined> {
+  const notif = Notifications;
+  if (!notif) {
+    return undefined;
+  }
+
   let token: string | undefined;
 
   // Android Notification Channel Setup
   if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
+    await notif.setNotificationChannelAsync('default', {
       name: 'Default Channel',
-      importance: Notifications.AndroidImportance.MAX,
+      importance: notif.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#F6163C',
     });
   }
 
   if (Device.isDevice) {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    const { status: existingStatus } = await notif.getPermissionsAsync();
     let finalStatus = existingStatus;
 
     if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
+      const { status } = await notif.requestPermissionsAsync();
       finalStatus = status;
     }
 
@@ -53,7 +77,7 @@ export async function registerForPushNotificationsAsync(): Promise<string | unde
     }
 
     try {
-      const pushTokenData = await Notifications.getExpoPushTokenAsync({
+      const pushTokenData = await notif.getExpoPushTokenAsync({
         projectId,
       });
       token = pushTokenData.data;

@@ -24,8 +24,8 @@ export const ENDPOINTS = {
   // Dashboard
 
   // Screen
-  GET_QR: `${BASE_URL}/api/client/qr`,
-  
+  GET_QR: `${BASE_URL}/api/client-details/me/qr`,
+
   // Notifications
   REGISTER_DEVICE_TOKEN: `${BASE_URL}/api/device-tokens/register`,
   UNREGISTER_DEVICE_TOKEN: `${BASE_URL}/api/device-tokens/unregister`,

@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/rules-of-hooks */
+/* eslint-disable react-hooks/rules-of-hooks, @typescript-eslint/no-require-imports */
 import React, { useImperativeHandle, forwardRef, useRef, useState, useEffect } from 'react';
 import {
   View,
@@ -303,7 +303,7 @@ const SelfieContent = forwardRef<SelfieScreenRef, SelfieScreenProps>(
                     ref={cameraRef}
                     facing="front"
                     mirror={true} // Mirrored preview for intuitive framing
-                    style={StyleSheet.absoluteFillObject}
+                    style={StyleSheet.absoluteFill}
                   />
                 )}
 
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   scannerOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(246, 22, 60, 0.02)', // Subtle red tint

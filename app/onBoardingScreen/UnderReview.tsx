@@ -10,7 +10,7 @@ import { useCheckUserStep } from '@/hook/useClient';
 
 export default function UnderReview() {
   const router = useRouter();
-  const { user, setUser } = useAuthStore();
+  const { user, setUser, logOut } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const checkStatusMutation = useCheckUserStep();
@@ -73,11 +73,19 @@ export default function UnderReview() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleBack = () => {
-    router.replace({
-      pathname: '/onBoardingScreen/OnBoardingStep',
-      params: { step: '5' },
-    });
+  const handleBack = async () => {
+    try {
+      await logOut();
+      Toast.show({
+        type: 'success',
+        text1: 'Logged Out',
+        text2: 'You have been successfully logged out.',
+      });
+      router.replace('/welcome');
+    } catch (error) {
+      console.error('Logout error:', error);
+      router.replace('/welcome');
+    }
   };
 
   return (
